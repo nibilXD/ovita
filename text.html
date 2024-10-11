@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select AI</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Form Container Styling */
+        .form-container {
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        label {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: block;
+            color: #fff;
+        }
+
+        /* Larger Radio Button Styling */
+        input[type="radio"] {
+            margin-right: 20px;
+            accent-color: #2575fc;
+            transform: scale(1.5); /* Make the radio buttons bigger */
+        }
+
+        /* Larger Button Styling */
+        button {
+            background-color: #2575fc;
+            color: white;
+            font-size: 1.5rem;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #6a11cb;
+        }
+
+        /* Error Message Styling */
+        .error-message {
+            color: #ff4747;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            color: #000;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 15px;
+        }
+
+        .close-btn {
+            background-color: #2575fc;
+            color: white;
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .close-btn:hover {
+            background-color: #6a11cb;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Modal Section -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <h2>This is an early version of the training module developed by Nibil</h2>
+            <button class="close-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <h1>Select an AI</h1>
+        <form id="aiSelectionForm">
+            <label for="ashwith">
+                <input type="radio" id="ashwith" name="ai" value="ashwith">
+                Ashwith AI
+            </label><br>
+            <label for="nimisha">
+                <input type="radio" id="nimisha" name="ai" value="nimisha">
+                Nimisha AI
+            </label><br><br>
+            <button type="button" onclick="redirectToAI()">Go</button>
+            <p id="errorMessage" class="error-message"></p>
+        </form>
+    </div>
+
+    <script>
+        // Show the modal when the page loads
+        window.onload = function() {
+            document.getElementById("myModal").style.display = "flex";
+        };
+
+        // Close the modal
+        function closeModal() {
+            document.getElementById("myModal").style.display = "none";
+        }
+
+        function redirectToAI() {
+            let aiSelected = document.querySelector('input[name="ai"]:checked');
+            let errorMessage = document.getElementById("errorMessage");
+            if (aiSelected) {
+                errorMessage.textContent = ''; // Clear error if any
+                if (aiSelected.value === 'ashwith') {
+                    window.location.href = "hi/index.html";
+                } else if (aiSelected.value === 'nimisha') {
+                    window.location.href = "maths/index.html";
+                }
+            } else {
+                errorMessage.textContent = "Please select an AI!";
+            }
+        }
+    </script>
+</body>
+</html>
