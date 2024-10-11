@@ -160,20 +160,8 @@ function translateToSanskrit(englishText) {
     "my day was good": "मम दिनं उत्तमम् अभवत्",
     "what are you watching?": "त्वं किं पश्यसि?",
     "i am watching a movie": "अहं चलच्चित्रं पश्यामि",
-    "where are you living?": "त्वं कुत्र वससि?",
-    "i live in thrissur": "अहं त्रिश्शूर् नगरे वसामि",
-    "what's the problem?": "समस्या किम् अस्ति?",
-    "there is no problem": "काचित् समस्या नास्ति",
-    "do you like coffee?": "किं ते कॉफी रोचते?",
-    "yes, i like coffee": "आम्, मम कॉफी रोचते",
-    "what is your favorite food?": "तव प्रियः आहारः कः अस्ति?",
-    "my favorite food is rice": "मम प्रियः आहारः तण्डुलः अस्ति"
+    "where are you living?": "त्वं कुत्र वससि?"
   };
 
-  let translatedText = translations[englishText.toLowerCase()];
-  if (translatedText) {
-    return translatedText;
-  } else {
-    return "क्षमा करें, मुझे इसका अनुवाद करने का तरीका नहीं आता।";
-  }
+  return translations[englishText.toLowerCase()] || "Translation not available";
 }
