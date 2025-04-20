@@ -95,6 +95,12 @@ nav {
   line-height: 1;
   color: white;
 }
+.live-button:hover .live-tag {
+  background-color: green;
+  color: white;
+  border: 2px solid green;
+}
+
 /* Blog post styles */
 .blog-post {
   height: 100vh;
