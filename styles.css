@@ -1,0 +1,232 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Space Grotesk", sans-serif;
+  color: #ffffff;
+  background-color: #000000;
+  line-height: 1.6;
+}
+
+/* Header styles */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  z-index: -1;
+}
+
+.logo img {
+  height: 60px;
+  width: auto;
+}
+
+nav {
+  position: relative;
+  margin-left: auto;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 25px;
+  height: 2px;
+  background-color: white;
+  margin: 5px 0;
+  transition: 0.3s;
+}
+
+.menu {
+  display: flex;
+  list-style: none;
+  gap: 20px;
+}
+
+.menu li a {
+  color: white;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 1px;
+  transition: 0.3s;
+}
+
+.menu li a:hover {
+  color: #cccccc;
+}
+
+/* Blog post styles */
+.blog-post {
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.blog-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  /* Removed grayscale filter to show colorful images */
+  transition: transform 0.5s ease;
+}
+
+.blog-post:hover .blog-image {
+  transform: scale(1.05);
+}
+
+.blog-content {
+  position: absolute;
+  bottom: 50px;
+  left: 50px;
+  max-width: 600px;
+  z-index: 1;
+}
+
+.blog-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* Update button styles to be transparent */
+.read-more {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: black;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: 0.3s;
+  backdrop-filter: blur(5px);
+}
+
+.read-more:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* View all button with transparency */
+.view-all-container {
+  display: flex;
+  justify-content: center;
+  padding: 50px 0;
+}
+
+.view-all {
+  display: inline-block;
+  padding: 15px 40px;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: black;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 2px;
+  transition: 0.3s;
+  backdrop-filter: blur(5px);
+}
+
+.view-all:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Update footer styles */
+footer {
+  padding: 30px 50px;
+  background-color: black;
+  border-top: 1px solid #333;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 15px;
+}
+
+.footer-links {
+  margin-bottom: 15px;
+}
+
+.footer-links a {
+  color: white;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.footer-links a:hover {
+  color: #cccccc;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+    z-index: 1001;
+    margin-left: auto;
+  }
+
+  .menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 250px;
+    height: 100vh;
+    background-color: black;
+    flex-direction: column;
+    padding: 80px 20px 20px;
+    transition: 0.5s;
+    overflow-y: auto;
+  }
+
+  .menu.active {
+    right: 0;
+  }
+
+  .blog-content {
+    left: 20px;
+    bottom: 30px;
+  }
+
+  .blog-content h2 {
+    font-size: 1.8rem;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+}
