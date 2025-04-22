@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact - Ovita</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #000;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    header img {
+      height: 60px;
+    }
+
+    .back-button {
+      position: absolute;
+      left: 1rem;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .contact-container {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 2rem;
+      backdrop-filter: blur(8px);
+      margin-bottom: 3rem;
+    }
+
+    .contact-container h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      font-size: 0.9rem;
+      color: #ccc;
+      margin-top: 1rem;
+      display: block;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #888;
+      background: transparent;
+      color: #fff;
+      font-size: 1rem;
+      border-radius: 8px;
+      margin-top: 0.3rem;
+      transition: 0.3s;
+    }
+
+    input:hover, textarea:hover, select:hover {
+      border-color: #fff;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: white;
+    }
+
+    .send-btn {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.75rem;
+      background: transparent;
+      border: 1px solid #fff;
+      color: #fff;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .send-btn:hover {
+      background: #fff;
+      color: #000;
+    }
+
+    .send-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .info-box {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    .faq-section {
+      width: 100%;
+      max-width: 600px;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      margin-top: 3rem;
+    }
+
+    .faq-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .faq-item {
+      background: rgba(255, 255, 255, 0.1);
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: background 0.3s ease;
+    }
+
+    .faq-item summary {
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      border: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .faq-item summary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .faq-item p {
+      padding: 1rem;
+      color: #ccc;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-top: 1px solid #fff;
+    }
+
+    .faq-item details[open] summary {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .faq-item summary::after {
+      content: '+';
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .faq-item details[open] summary::after {
+      content: '-';
+    }
+
+    footer {
+      padding: 30px 50px;
+      background-color: black;
+      border-top: 1px solid #333;
+      margin-top: 3rem;
+    }
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      gap: 15px;
+    }
+
+    .footer-links {
+      margin-bottom: 15px;
+    }
+
+    .footer-links a {
+      color: white;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: #cccccc;
+    }
+
+    .footer-content p {
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    @media (max-width: 600px) {
+      header img {
+        height: 50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button class="back-button" onclick="history.back()">←</button>
+    <img src="/logo.png" alt="Ovita Logo" />
+  </header>
+
+  <!-- Contact Form Section -->
+  <div class="contact-container">
+    <h1>Contact Us</h1>
+
+    <form action="https://formspree.io/f/xzzrbdgk" method="POST">
+      <label for="inquiry">Inquiry Type</label>
+      <select id="inquiry" name="inquiry" required>
+        <option value="" disabled selected>Select an inquiry type</option>
+        <option>General Inquiry</option>
+        <option>Business Inquiry</option>
+        <option>Media Inquiry</option>
+        <option>Scientific/Research Inquiry</option>
+        <option>Career/Recruitment Inquiry</option>
+        <option>Public Engagement/Education Inquiry</option>
+        <option>Technical/Support Inquiry</option>
+        <option>Policy/Government Inquiry</option>
+        <option>Event/Sponsorship Inquiry</option>
+        <option>Freedom of Information/Transparency Inquiry</option>
+        <option>Other</option>
+      </select>
+
+      <label for="name">Your Name</label>
+      <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+      <label for="email">Your Email</label>
+      <input type="email" id="email" name="email" placeholder="Enter your email" required>
+
+      <label for="message">Message</label>
+      <textarea id="message" name="message" rows="5" placeholder="Write your message here..." required></textarea>
+
+      <button class="send-btn" type="submit">Send</button>
+    </form>
+
+    <div class="info-box">
+      <p><strong>Response Time:</strong> We usually respond within <b>30 minutes</b>.</p>
+      <p><strong>Working Hours:</strong> Monday – Saturday, 9 AM – 6 PM IST</p>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+
+    <div class="faq-item">
+      <details>
+        <summary>Can I collaborate with Ovita on a space project?</summary>
+        <p>Yes! Choose "Scientific/Research Inquiry" and mention your idea in detail.</p>
+      </details>
+    </div>
+
+    <div class="faq-item">
+      <details>
+        <summary>How can I join Ovita as an intern or employee?</summary>
+        <p>Use the "Career/Recruitment Inquiry" and attach your resume or LinkedIn profile.</p>
+      </details>
+    </div>
+<div class="faq-item">
+          <details>
+            <summary>Can media request interviews with the team?</summary>
+            <p>Yes. Select "Media Inquiry" and we’ll arrange a session with the team based on availability.</p>
+          </details>
+        </div>
+
+        <div class="faq-item">
+          <details>
+            <summary>What is the best way to get updates on Ovita’s space programs?</summary>
+            <p>For the latest updates, follow us on our social media or subscribe to our newsletter through the "Blogger & Research Papers" section.</p>
+          </details>
+        </div>
+
+        <div class="faq-item">
+          <details>
+            <summary>How can I share my ideas with Ovita?</summary>
+            <p>Use the "Share Your Thoughts/Submit Your Ideas" section on our website to send us your ideas and suggestions.</p>
+          </details>
+        </div>
+
+        <div class="faq-item">
+          <details>
+            <summary>Do you offer internships for students?</summary>
+            <p>Yes, we offer internships. Please mention "Career/Recruitment Inquiry" and submit your details through the contact form.</p>
+          </details>
+        </div>
+      </section>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-links">
+      <a href="cs.html">PRIVACY POLICY</a> | <a href="cs.html">Tools</a>
+    </div>
+    <p>Ovitalab © 2025</p>
+  </div>
+</footer>
+
+<style>
+  footer {
+    padding: 30px 50px;
+    background-color: black;
+    border-top: 1px solid #333;
+  }
+
+  .footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 15px;
+  }
+
+  .footer-links {
+    margin-bottom: 15px;
+  }
+
+  .footer-links a {
+    color: white;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+
+  .footer-links a:hover {
+    color: #cccccc;
+  }
+
+  .footer-content p {
+    font-size: 1rem;
+    color: #fff;
+  }
+</style>
+  </body>
+</html>
