@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ovita Orbit Simulator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+    body {
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: #111;
+      padding: 1rem;
+      text-align: center;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+    header img {
+      width: 120px; /* Increased logo size */
+      height: auto;
+    }
+    header .back-btn {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #fff; /* White arrow */
+    }
+    footer {
+      background: #111;
+      padding: 1rem;
+      text-align: center;
+      font-weight: bold;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .config {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 600px;
+      width: 100%;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+    input, select, button {
+      margin-top: 0.3rem;
+      padding: 0.5rem;
+      background: #111;
+      color: #fff;
+      border: 1px solid #444;
+    }
+    button {
+      margin: 0.5rem 0.3rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #222;
+    }
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      background: #111;
+      color: #fff;
+      padding: 0.5rem;
+      margin-top: 1rem;
+      border: 1px solid #444;
+      resize: none;
+    }
+    .help-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 1rem;
+    }
+    .help-link a {
+      color: #aaa;
+      text-decoration: none;
+      border-bottom: 1px solid #aaa;
+    }
+    .help-link a:hover {
+      color: #fff;
+    }
+    .title {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.6rem;
+      font-weight: normal;
+    }
+    @media (max-width: 600px) {
+      .config {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../../index.html">
+      <img src="logo.png" alt="Ovita Logo">
+    </a>
+    <a href="../tu.html" class="back-btn">←</a>
+  </header>
+
+  <div class="title">
+    <h1>Ovita Orbit Simulator</h1>
+  </div>
+
+  <main>
+    <div class="config">
+      <label>Mass (kg)
+        <input type="number" id="mass" value="5.972e24">
+      </label>
+      <label>Semi-Major Axis (km)
+        <input type="number" id="axis" value="149600000">
+      </label>
+      <label>Eccentricity
+        <input type="number" step="0.01" id="eccentricity" value="0.0167">
+      </label>
+      <label>Inclination (deg)
+        <input type="number" id="inclination" value="0">
+      </label>
+      <label>Steps
+        <input type="number" id="steps" value="360">
+      </label>
+      <label>Export Format
+        <select id="format">
+          <option value="csv">CSV</option>
+          <option value="json">JSON</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="button-group">
+      <button onclick="simulateOrbit()">Simulate</button>
+      <button onclick="exportData()">Export</button>
+      <button onclick="copyData()">Copy Data</button>
+    </div>
+
+    <textarea id="output" readonly></textarea>
+
+    <section style="margin-top: 2rem; max-width: 800px; width: 100%; padding: 1rem; background: #111; border: 1px solid #333;">
+      <h2 style="margin-bottom: 1rem; font-size: 1.3rem;">How to Use Ovita Orbit Simulator</h2>
+      <ol style="line-height: 1.8; font-size: 0.95rem; padding-left: 1.2rem;">
+        <li><strong>Enter Mass:</strong> Input the mass of the central body (e.g., Earth or Sun).</li>
+        <li><strong>Set Semi-Major Axis:</strong> Distance between center and orbiting body (in kilometers).</li>
+        <li><strong>Adjust Eccentricity:</strong> 0 is circular, up to 1 is elongated.</li>
+        <li><strong>Inclination:</strong> Angle of orbital plane in degrees.</li>
+        <li><strong>Steps:</strong> Number of data points in one orbit.</li>
+        <li><strong>Select Format:</strong> Choose CSV or JSON for export.</li>
+        <li><strong>Simulate:</strong> Click to generate orbit data.</li>
+        <li><strong>Export:</strong> View it in raw format for download.</li>
+        <li><strong>Copy:</strong> Copies output to clipboard for use elsewhere.</li>
+      </ol>
+      <p style="margin-top: 1rem; font-size: 0.9rem; color: #aaa;">
+        Use this data for analysis, modeling, or scientific visualization. Powered by Ovita.
+      </p>
+
+      <div class="help-link">
+        <p><a href="../contact.html">Need more help?</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    &copy; Ovita Space Agency | All Rights Reserved
+  </footer>
+
+  <script>
+    let simulationResult = "";
+
+    function simulateOrbit() {
+      const G = 6.67430e-11;
+      const mass = parseFloat(document.getElementById('mass').value);
+      const a = parseFloat(document.getElementById('axis').value) * 1000; // km to m
+      const e = parseFloat(document.getElementById('eccentricity').value);
+      const i = parseFloat(document.getElementById('inclination').value) * Math.PI / 180;
+      const steps = parseInt(document.getElementById('steps').value);
+      const format = document.getElementById('format').value;
+
+      const mu = G * mass;
+      let result = format === 'csv' ? 'θ,x (km),y (km),z (km)\n' : [];
+
+      for (let theta = 0; theta < 360; theta += 360 / steps) {
+        const rad = theta * Math.PI / 180;
+        const r = a * (1 - e * e) / (1 + e * Math.cos(rad));
+        const x = r * Math.cos(rad);
+        const y = r * Math.sin(rad) * Math.cos(i);
+        const z = r * Math.sin(rad) * Math.sin(i);
+
+        if (format === 'csv') {
+          result += `${theta.toFixed(2)},${(x/1000).toFixed(2)},${(y/1000).toFixed(2)},${(z/1000).toFixed(2)}\n`;
+        } else {
+          result.push({theta: theta.toFixed(2), x: (x/1000).toFixed(2), y: (y/1000).toFixed(2), z: (z/1000).toFixed(2)});
+        }
+      }
+
+      simulationResult = format === 'json' ? JSON.stringify(result, null, 2) : result;
+      document.getElementById('output').value = simulationResult;
+    }
+
+    function exportData() {
+      if (!simulationResult) {
+        alert("Run simulation first.");
+        return;
+      }
+      const format = document.getElementById('format').value;
+      const blob = new Blob([simulationResult], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `orbit_data.${format}`;
+      link.click();
+    }
+
+    function copyData() {
+      const output = document.getElementById('output');
+      output.select();
+      document.execCommand("copy");
+      alert("Data copied to clipboard.");
+    }
+  </script>
+</body>
+</html>
