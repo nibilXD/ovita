@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rocket Trajectory Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: monospace;
+    }
+    body {
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      position: relative;
+    }
+    header img {
+      height: 50px;
+    }
+    .back-arrow {
+      position: absolute;
+      left: 1rem;
+      font-size: 1.5rem;
+      color: #fff;
+      text-decoration: none;
+    }
+    main {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .config {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+    input, select, button {
+      margin-top: 0.3rem;
+      padding: 0.5rem;
+      background: #222;
+      color: #fff;
+      border: 1px solid #555;
+    }
+    button:hover {
+      background: #333;
+      cursor: pointer;
+    }
+    textarea {
+      width: 100%;
+      max-width: 800px;
+      height: 180px;
+      background: #111;
+      color: #fff;
+      padding: 0.5rem;
+      border: 1px solid #444;
+      margin-top: 1rem;
+    }
+    .stats, .actions {
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .actions button {
+      margin: 0.5rem;
+    }
+    .tutorial {
+      max-width: 800px;
+      margin-top: 2rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .help-link {
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .help-link a {
+      color: #fff;
+      text-decoration: underline;
+    }
+    footer {
+      background: #111;
+      text-align: center;
+      padding: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="back-arrow" href="../tu.html">&#8592;</a>
+    <img src="logo.png" alt="Logo">
+  </header>
+
+  <main>
+    <h2>Rocket Trajectory Calculator</h2>
+    <div class="config">
+      <label>Mass (kg)
+        <input type="number" id="mass" value="1000">
+      </label>
+      <label>Thrust (N)
+        <input type="number" id="thrust" value="10000">
+      </label>
+      <label>Launch Angle (deg)
+        <input type="number" id="angle" value="45">
+      </label>
+      <label>Burn Time (s)
+        <input type="number" id="burn" value="60">
+      </label>
+      <label>Time Step (s)
+        <input type="number" step="0.1" id="step" value="0.1">
+      </label>
+      <label>Wind Speed (m/s)
+        <input type="number" id="wind" value="0">
+      </label>
+      <label>Gravity (m/s²)
+        <input type="number" step="0.01" id="gravity" value="9.81">
+      </label>
+      <label>Thrust Type
+        <select id="thrustType">
+          <option value="constant">Constant</option>
+          <option value="decreasing">Decreasing</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button onclick="simulate()">Simulate</button>
+      <button onclick="resetSim()">Reset</button>
+      <button onclick="copyData()">Copy</button>
+      <button onclick="download()">Download</button>
+    </div>
+
+    <div class="stats" id="liveStats">Time: 0s | Height: 0m | Velocity: 0m/s</div>
+    <textarea id="output" readonly></textarea>
+
+    <div class="tutorial">
+      <h3>How to Use</h3>
+      <p>1. Enter the rocket's mass, thrust, and launch angle.</p>
+      <p>2. Set burn time (how long the thrust is active) and the time step for simulation precision.</p>
+      <p>3. Adjust wind speed and gravity if needed. Select the thrust type.</p>
+      <p>4. Click "Simulate" to calculate and display results.</p>
+      <p>5. Use "Copy" or "Download" to save your data, or "Reset" to start over.</p>
+      <div class="help-link">
+        <p><a href="../Contact.html">Need more help?</a></p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; Ovita Space Agency
+  </footer>
+
+<script>
+function simulate() {
+  const m = parseFloat(document.getElementById('mass').value);
+  const F = parseFloat(document.getElementById('thrust').value);
+  const angle = parseFloat(document.getElementById('angle').value) * Math.PI / 180;
+  const burn = parseFloat(document.getElementById('burn').value);
+  const step = parseFloat(document.getElementById('step').value);
+  const wind = parseFloat(document.getElementById('wind').value);
+  const g = parseFloat(document.getElementById('gravity').value);
+  const thrustType = document.getElementById('thrustType').value;
+
+  let output = "Time (s)\tX (m)\tY (m)\n";
+  let t = 0, x = 0, y = 0, vx = 0, vy = 0;
+
+  while (y >= 0) {
+    let thrust = (t <= burn) ? F : 0;
+    if (thrustType === "decreasing" && t <= burn) thrust *= (1 - t / burn);
+
+    const ax = (thrust * Math.cos(angle)) / m - wind / 10;
+    const ay = (thrust * Math.sin(angle)) / m - g;
+
+    vx += ax * step;
+    vy += ay * step;
+
+    x += vx * step;
+    y += vy * step;
+
+    document.getElementById('liveStats').innerText =
+      `Time: ${t.toFixed(1)}s | Height: ${y.toFixed(1)}m | Velocity: ${Math.sqrt(vx*vx + vy*vy).toFixed(1)}m/s`;
+
+    output += `${t.toFixed(1)}\t${x.toFixed(1)}\t${y.toFixed(1)}\n`;
+
+    if (t > 1000) break;
+    t += step;
+  }
+
+  document.getElementById('output').value = output;
+}
+
+function resetSim() {
+  document.getElementById('output').value = '';
+  document.getElementById('liveStats').innerText = 'Time: 0s | Height: 0m | Velocity: 0m/s';
+}
+
+function copyData() {
+  const text = document.getElementById('output').value;
+  navigator.clipboard.writeText(text);
+}
+
+function download() {
+  const text = document.getElementById('output').value;
+  const blob = new Blob([text], {type: 'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'trajectory_data.txt';
+  a.click();
+}
+</script>
+
+</body>
+        </html>
