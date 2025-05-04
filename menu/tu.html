@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools and Utilities - Ovitalab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            color: #ffffff;
+            background-color: #000000;
+            line-height: 1.6;
+        }
+
+        /* Header styles */
+        header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            transition: 0.3s;
+            margin-right: 20px;
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+        }
+
+        .logo {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            position: absolute;
+            left: 0;
+            z-index: -1;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        /* Search section styles */
+        .search-section {
+            background-color: rgba(10, 10, 10, 0.95);
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 900;
+        }
+
+        .search-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        .search-bar {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 10px 20px 10px 40px;
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            width: 400px;
+            transition: 0.3s;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.15);
+            width: 450px;
+        }
+
+        .filter-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+            transition: 0.3s;
+            padding: 5px;
+        }
+
+        .filter-button:hover {
+            color: #cccccc;
+        }
+
+        /* Main content styles */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .category-filter {
+            display: none;
+            background-color: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            padding: 15px;
+            position: absolute;
+            top: 60px;
+            right: 50%;
+            transform: translateX(200px);
+            z-index: 999;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 250px;
+        }
+
+        .category-filter.active {
+            display: block;
+        }
+
+        .filter-option {
+            display: block;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 4px;
+        }
+
+        .filter-option:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-option.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .category-title {
+            font-size: 2rem;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .tool-card {
+            background-color: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            transition: 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            background-color: rgba(40, 40, 40, 0.5);
+        }
+
+        .tool-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .tool-description {
+            color: #cccccc;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .use-button {
+            background-color: rgba(255, 255, 255, 0.7);
+            color: #000000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            align-self: flex-start;
+            text-decoration: none;
+        }
+
+        .use-button:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Newsletter styles */
+        .newsletter-section {
+            background-color: #050505;
+            padding: 60px 20px;
+            margin-top: 60px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .newsletter {
+            text-align: center;
+        }
+
+        .newsletter h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .newsletter p {
+            color: #cccccc;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .newsletter-form {
+            display: flex;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .newsletter-form input:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .newsletter-form button {
+            padding: 12px 25px;
+            background-color: rgba(255, 255, 255, 0.7);
+            color: #000000;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .newsletter-form button:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Footer styles */
+        footer {
+            padding: 30px 50px;
+            background-color: black;
+            border-top: 1px solid #333;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 15px;
+        }
+
+        .footer-links {
+            margin-bottom: 15px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #cccccc;
+        }
+
+        /* No results message */
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #cccccc;
+            display: none;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .search-bar {
+                width: 250px;
+            }
+            
+            .search-bar:focus {
+                width: 280px;
+            }
+            
+            .category-filter {
+                right: 20px;
+                transform: none;
+                width: 220px;
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .newsletter-form {
+                flex-direction: column;
+            }
+            
+            .newsletter-form input {
+                border-radius: 4px;
+                margin-bottom: 10px;
+            }
+            
+            .newsletter-form button {
+                border-radius: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="back-button">
+            &#8592;
+        </a>
+        <div class="logo">
+            <img src="/logo.png" alt="Ovitalab Logo">
+        </div>
+    </header>
+
+    <div class="search-section">
+        <div class="search-container">
+            
+            <input type="text" class="search-bar" placeholder="Search tools..." id="searchInput">
+<button class="filter-button" id="filterButton">
+  <i class="fas fa-filter"></i>
+</button>
+            
+            <div class="category-filter" id="categoryFilter">
+                <div class="filter-option active" data-category="all">All Categories</div>
+                <div class="filter-option" data-category="orbital">Orbital Mechanics & Rocketry</div>
+                <div class="filter-option" data-category="astronomy">Astronomy & Celestial Bodies</div>
+                <div class="filter-option" data-category="physics">Physics & Visualization Tools</div>
+                <div class="filter-option" data-category="solar">Solar System & Space Models</div>
+                <div class="filter-option" data-category="utilities">Utilities & Calculators</div>
+                <div class="filter-option" data-category="educational">Educational & Historical Tools</div>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <!-- Orbital Mechanics & Rocketry -->
+        <h2 class="category-title" id="orbital">Orbital Mechanics & Rocketry</h2>
+        <div class="tools-grid" data-category="orbital">
+            <div class="tool-card">
+                <h3 class="tool-title">Orbit Simulator</h3>
+                <p class="tool-description">Visualize planetary orbits using canvas with adjustable eccentricity and radius.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Rocket Trajectory Calculator</h3>
+                <p class="tool-description">Simulate 2D rocket paths by inputting mass, thrust, and launch angle.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Rocket Fuel Efficiency Calculator</h3>
+                <p class="tool-description">Calculate delta-V and ISP based on fuel type, mass, and engine efficiency.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Spacecraft Maneuver Planner</h3>
+                <p class="tool-description">Simulate orbital maneuvers like Hohmann transfers using user-defined inputs.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Orbital Decay Calculator</h3>
+                <p class="tool-description">Model satellite orbital decay due to atmospheric drag over time.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Kepler's Laws Demonstrator</h3>
+                <p class="tool-description">Visualize Kepler's three laws using animated elliptical orbits.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+        </div>
+
+        <!-- Astronomy & Celestial Bodies -->
+        <h2 class="category-title" id="astronomy">Astronomy & Celestial Bodies</h2>
+        <div class="tools-grid" data-category="astronomy">
+            <div class="tool-card">
+                <h3 class="tool-title">Stellar Classification Chart</h3>
+                <p class="tool-description">Explore an interactive H-R diagram showing star temperature, luminosity, and type.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Constellation Explorer</h3>
+                <p class="tool-description">Clickable star map to explore constellations, star names, and related mythology.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Lunar Phase Calendar</h3>
+                <p class="tool-description">Show the moon phase for any selected date with interactive visuals.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Star Lifecycle Timeline</h3>
+                <p class="tool-description">Timeline showing different stages of stellar evolution, from protostar to supernova.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Star Brightness Comparator</h3>
+                <p class="tool-description">Compare apparent and absolute magnitudes of stars with visual scale.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Sky Coordinate Plotter</h3>
+                <p class="tool-description">Plot celestial objects using inputted Right Ascension and Declination.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Parallax Measurement Tool</h3>
+                <p class="tool-description">Simulate stellar parallax to estimate distances to nearby stars.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Tidal Force Simulator</h3>
+                <p class="tool-description">Show tidal effects of moons and planets on objects with distance and mass inputs.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Exoplanet Database</h3>
+                <p class="tool-description">Static dataset with filters to explore exoplanets by size, orbit, and star type.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Habitable Zone Calculator</h3>
+                <p class="tool-description">Visualize habitable zones based on star size and temperature.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Eclipse Predictor</h3>
+                <p class="tool-description">Predict visibility of solar or lunar eclipses for any inputted date.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Pulsar Signal Visualizer</h3>
+                <p class="tool-description">Simulate radio pulses from pulsars with adjustable frequency and distance.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Black Hole Visualizer</h3>
+                <p class="tool-description">Show gravitational lensing and light bending near a black hole.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Relativity Time Dilation Tool</h3>
+                <p class="tool-description">Input speed to calculate relativistic time dilation effects near light speed.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+        </div>
+
+        <!-- Physics & Visualization Tools -->
+        <h2 class="category-title" id="physics">Physics & Visualization Tools</h2>
+        <div class="tools-grid" data-category="physics">
+            <div class="tool-card">
+                <h3 class="tool-title">Gravity Well Visualizer</h3>
+                <p class="tool-description">Visualize gravity wells and object deflection using canvas-based animations.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Doppler Effect Simulator</h3>
+                <p class="tool-description">Show redshift and blueshift for objects moving toward or away from the viewer.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Spectroscopy Tool</h3>
+                <p class="tool-description">Simulate light spectra with emission lines to identify elements in stars.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Cosmic Microwave Background Map</h3>
+                <p class="tool-description">Zoomable visual representation of the cosmic microwave background radiation.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+        </div>
+
+        <!-- Solar System & Space Models -->
+        <h2 class="category-title" id="solar">Solar System & Space Models</h2>
+        <div class="tools-grid" data-category="solar">
+            <div class="tool-card">
+                <h3 class="tool-title">Solar System Model</h3>
+                <p class="tool-description">Create a 3D CSS or canvas-based solar system with scalable planet distances.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Galactic Structure Explorer</h3>
+                <p class="tool-description">Explore the Milky Way galaxy with arms, star clusters, and nebulae shown interactively.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+        </div>
+
+        <!-- Utilities & Calculators -->
+        <h2 class="category-title" id="utilities">Utilities & Calculators</h2>
+        <div class="tools-grid" data-category="utilities">
+            <div class="tool-card">
+                <h3 class="tool-title">Telescope Focal Length Calculator</h3>
+                <p class="tool-description">Calculate telescope focal length and magnification based on mirror/lens parameters.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Astronomical Unit Converter</h3>
+                <p class="tool-description">Convert between astronomical units, light-years, parsecs, and kilometers.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+        </div>
+
+        <!-- Educational & Historical Tools -->
+        <h2 class="category-title" id="educational">Educational & Historical Tools</h2>
+        <div class="tools-grid" data-category="educational">
+            <div class="tool-card">
+                <h3 class="tool-title">Space Mission Timeline</h3>
+                <p class="tool-description">Interactive timeline showing major historical space missions with details.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+            <div class="tool-card">
+                <h3 class="tool-title">Asteroid Impact Simulator</h3>
+                <p class="tool-description">Input asteroid size and speed to simulate crater size and energy release.</p>
+                <a href="tools/cs.html" class="use-button">Use Tool</a>
+            </div>
+        </div>
+
+        <div class="no-results" id="noResults">
+            <p>No tools match your search criteria.</p>
+        </div>
+    </main>
+
+    <section class="newsletter-section">
+        <div class="container">
+            <div class="newsletter">
+                <h2>Stay connected</h2>
+                <p>Subscribe to newsletter for upcoming Events and updates.</p>
+                <form action="https://formspree.io/f/xzzrbdgk" method="POST">
+                    <input type="hidden" name="message" value="Email from newsletter in Tools">
+                    <div class="newsletter-form">
+                        <input type="email" name="email" placeholder="Enter your email" required>
+                        <button type="submit">Subscribe</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/cs.html">PRIVACY POLICY</a> | <a href="menu/tu.html">TOOLS</a>
+            </div>
+            <p>Ovitalab © 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Filter button functionality
+            const filterButton = document.getElementById('filterButton');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const filterOptions = document.querySelectorAll('.filter-option');
+            const searchInput = document.getElementById('searchInput');
+            const noResults = document.getElementById('noResults');
+            
+            // Toggle filter dropdown
+            filterButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                categoryFilter.classList.toggle('active');
+            });
+            
+            // Close filter dropdown when clicking outside
+            document.addEventListener('click', (event) => {
+                if (!filterButton.contains(event.target) && !categoryFilter.contains(event.target)) {
+                    categoryFilter.classList.remove('active');
+                }
+            });
+            
+            // Prevent clicks inside the dropdown from closing it
+            categoryFilter.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            // Category filtering
+            filterOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Update active state
+                    filterOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                    
+                    const selectedCategory = option.getAttribute('data-category');
+                    filterTools(selectedCategory, searchInput.value);
+                    
+                    // Close the dropdown
+                    categoryFilter.classList.remove('active');
+                });
+            });
+            
+            // Search functionality
+            searchInput.addEventListener('input', () => {
+                const activeCategory = document.querySelector('.filter-option.active').getAttribute('data-category');
+                filterTools(activeCategory, searchInput.value);
+            });
+            
+            // Function to filter tools based on category and search term
+            function filterTools(category, searchTerm) {
+                const toolCards = document.querySelectorAll('.tool-card');
+                const categoryTitles = document.querySelectorAll('.category-title');
+                const toolsGrids = document.querySelectorAll('.tools-grid');
+                
+                searchTerm = searchTerm.toLowerCase().trim();
+                let hasVisibleTools = false;
+                
+                // Hide all category titles and grids first
+                categoryTitles.forEach(title => {
+                    title.style.display = 'none';
+                });
+                
+                toolsGrids.forEach(grid => {
+                    grid.style.display = 'none';
+                });
+                
+                // Show only relevant categories and tools
+                toolCards.forEach(card => {
+                    const toolTitle = card.querySelector('.tool-title').textContent.toLowerCase();
+                    const toolDescription = card.querySelector('.tool-description').textContent.toLowerCase();
+                    const cardCategory = card.parentElement.getAttribute('data-category');
+                    
+                    const matchesCategory = category === 'all' || cardCategory === category;
+                    const matchesSearch = toolTitle.includes(searchTerm) || toolDescription.includes(searchTerm);
+                    
+                    if (matchesCategory && matchesSearch) {
+                        card.style.display = 'flex';
+                        
+                        // Show the category title and grid
+                        const categoryId = cardCategory;
+                        document.getElementById(categoryId).style.display = 'block';
+                        card.parentElement.style.display = 'grid';
+                        
+                        hasVisibleTools = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Show/hide no results message
+                if (hasVisibleTools) {
+                    noResults.style.display = 'none';
+                } else {
+                    noResults.style.display = 'block';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
