@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rocket Fuel Efficiency Calculator</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: monospace;
+      margin: 0;
+      padding: 0;
+    }
+    header, footer {
+      background: #111;
+      padding: 1rem;
+      text-align: center;
+      font-weight: bold;
+      position: relative;
+    }
+    header img {
+      height: 40px;
+      display: block;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+    .back-arrow {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      text-decoration: none;
+      font-size: 1.5rem;
+    }
+    main {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .config {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 600px;
+      width: 100%;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+    input, select, button {
+      margin-top: 0.3rem;
+      padding: 0.5rem;
+      background: #222;
+      color: #fff;
+      border: 1px solid #555;
+    }
+    button {
+      font-size: 1rem;
+      margin: 0.5rem 0.3rem;
+    }
+    button:hover {
+      background: #333;
+    }
+    .results {
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 600px;
+    }
+    textarea {
+      width: 340px;
+      height: 120px;
+      background: #111;
+      color: #fff;
+      padding: 0.5rem;
+      border: 1px solid #444;
+    }
+    .tutorial-box {
+      background: #111;
+      border: 1px solid #333;
+      padding: 1rem;
+      margin-top: 2rem;
+      max-width: 600px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .help-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .help-link a {
+      color: white;
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .config {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back-arrow" href="../tu.html">&#8592;</a>
+    <a href="../../index.html"><img src="logo.png" alt="Logo" /></a>
+  </header>
+
+  <main>
+    <h2>Rocket Fuel Efficiency Calculator</h2>
+    <div class="config">
+      <label>Fuel Mass (kg)
+        <input type="number" id="fuelMass" value="5000">
+      </label>
+      <label>Dry Mass (kg)
+        <input type="number" id="dryMass" value="2000">
+      </label>
+      <label>Engine Thrust (N)
+        <input type="number" id="thrust" value="100000">
+      </label>
+      <label>Burn Time (s)
+        <input type="number" id="burnTime" value="60">
+      </label>
+      <label>Fuel Type
+        <select id="fuelType">
+          <option value="kerosene">Kerosene</option>
+          <option value="hydrogen" selected>Liquid Hydrogen</option>
+          <option value="methane">Liquid Methane</option>
+          <option value="solid">Solid Propellant</option>
+          <option value="hydrazine">Hydrazine</option>
+          <option value="nuclear">Nuclear Thermal</option>
+          <option value="ion">Ion Propellant</option>
+          <option value="monopropellant">Monopropellant</option>
+          <option value="alcohol">Alcohol-Based</option>
+          <option value="hypergolic">Hypergolic</option>
+        </select>
+      </label>
+      <label>Engine Type
+        <select id="engineType">
+          <option value="standard">Standard</option>
+          <option value="vacuum">Vacuum Optimized</option>
+          <option value="sea">Sea-Level</option>
+          <option value="electric">Electric</option>
+          <option value="nuclear">Nuclear</option>
+        </select>
+      </label>
+    </div>
+
+    <div>
+      <button onclick="calculateEfficiency()" style="font-size: 1.1rem;">Calculate Efficiency</button>
+      <button onclick="copyData()" style="font-size: 1.1rem;">Copy Data</button>
+      <button onclick="downloadData()" style="font-size: 1.1rem;">Download</button>
+    </div>
+
+    <div class="results">
+      <textarea id="output" readonly></textarea>
+    </div>
+
+    <div class="tutorial-box">
+      <h3>How to Use</h3>
+      <p>1. Enter your rocket's <strong>fuel mass</strong> and <strong>dry mass</strong>.</p>
+      <p>2. Select the desired <strong>fuel</strong> and <strong>engine type</strong>.</p>
+      <p>3. Enter the <strong>engine thrust</strong> and <strong>burn time</strong>.</p>
+      <p>4. Click "Calculate Efficiency" to see estimated Delta-V, ISP, velocity, and fuel cost.</p>
+      <p>5. Use "Copy Data" or "Download" to save results.</p>
+    </div>
+
+    <div class="help-link">
+      <p><a href="../Contact.html">Need more help?</a></p>
+    </div>
+  </main>
+
+  <footer>
+    &copy; Ovita Space Agency
+  </footer>
+
+  <script>
+    function getISP(fuel) {
+      const ispValues = {
+        kerosene: 350,
+        hydrogen: 450,
+        methane: 370,
+        solid: 250,
+        hydrazine: 300,
+        nuclear: 900,
+        ion: 3000,
+        monopropellant: 220,
+        alcohol: 290,
+        hypergolic: 320
+      };
+      return ispValues[fuel] || 300;
+    }
+
+    function getFuelCost(fuel) {
+      const costValues = {
+        kerosene: 0.8,
+        hydrogen: 2.5,
+        methane: 1.2,
+        solid: 1.0,
+        hydrazine: 3.0,
+        nuclear: 100,
+        ion: 10,
+        monopropellant: 2.0,
+        alcohol: 1.5,
+        hypergolic: 2.8
+      };
+      return costValues[fuel] || 1.0;
+    }
+
+    function getEngineEfficiency(engine) {
+      const effValues = {
+        standard: 0.9,
+        vacuum: 0.95,
+        sea: 0.85,
+        electric: 0.98,
+        nuclear: 0.92
+      };
+      return effValues[engine] || 0.9;
+    }
+
+    function calculateEfficiency() {
+      const fuelMass = parseFloat(document.getElementById('fuelMass').value);
+      const dryMass = parseFloat(document.getElementById('dryMass').value);
+      const thrust = parseFloat(document.getElementById('thrust').value);
+      const burnTime = parseFloat(document.getElementById('burnTime').value);
+      const fuelType = document.getElementById('fuelType').value;
+      const engineType = document.getElementById('engineType').value;
+
+      const g0 = 9.81;
+      const isp = getISP(fuelType);
+      const fuelCost = getFuelCost(fuelType) * fuelMass;
+      const efficiency = getEngineEfficiency(engineType);
+
+      const totalMass = fuelMass + dryMass;
+      const deltaV = isp * g0 * Math.log(totalMass / dryMass) * efficiency;
+      const velocity = (thrust * burnTime) / totalMass;
+
+      const output = `Fuel Type: ${fuelType}
+Engine Type: ${engineType}
+ISP: ${isp} s
+Thrust: ${thrust} N
+Velocity Estimate: ${velocity.toFixed(2)} m/s
+Delta-V: ${deltaV.toFixed(2)} m/s
+Fuel Cost: ₹${fuelCost.toFixed(2)}
+Total Burn Time: ${burnTime} s`;
+
+      document.getElementById('output').value = output;
+    }
+
+    function copyData() {
+      const data = document.getElementById('output').value;
+      navigator.clipboard.writeText(data);
+    }
+
+    function downloadData() {
+      const data = document.getElementById('output').value;
+      const blob = new Blob([data], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "rocket_efficiency.txt";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+      </html>
