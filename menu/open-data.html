@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Data - Ovitalab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            color: #ffffff;
+            background-color: #000000;
+            line-height: 1.6;
+        }
+
+        /* Header styles */
+        header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            transition: 0.3s;
+            margin-right: 20px;
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+        }
+
+        .logo {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            position: absolute;
+            left: 0;
+            z-index: -1;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        /* Search bar styles */
+        .search-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            background-color: rgba(30, 30, 30, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-bar:focus-within {
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 15px 20px;
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-input:focus {
+            outline: none;
+        }
+
+        .search-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 0 20px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .search-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .search-results {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0 5px;
+        }
+
+        /* Main content styles */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 20px 40px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-description {
+            font-size: 1.1rem;
+            color: #cccccc;
+            margin-bottom: 30px;
+            max-width: 800px;
+        }
+
+        /* No data available section */
+        .no-data {
+            background-color: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .no-data h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .no-data p {
+            color: #cccccc;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Data portals grid */
+        .data-portals {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .portal-card {
+            background-color: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .portal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            background-color: rgba(40, 40, 40, 0.5);
+        }
+
+        .portal-logo {
+            width: 100%;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+        }
+
+        .portal-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.5s;
+        }
+
+        .portal-card:hover .portal-logo img {
+            transform: scale(1.05);
+        }
+
+        .portal-content {
+            padding: 20px;
+        }
+
+        .portal-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .visit-button {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.7);
+            color: #000000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .visit-button:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* No results message */
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            background-color: rgba(30, 30, 30, 0.5);
+            border-radius: 8px;
+            margin-bottom: 60px;
+            display: none;
+        }
+
+        .no-results h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .no-results p {
+            color: #cccccc;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+
+        .reset-search {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.7);
+            color: #000000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .reset-search:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Footer styles */
+        footer {
+            padding: 30px 50px;
+            background-color: black;
+            border-top: 1px solid #333;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 15px;
+        }
+
+        .footer-links {
+            margin-bottom: 15px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #cccccc;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .data-portals {
+                grid-template-columns: 1fr;
+            }
+            
+            .no-data {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="back-button">
+            &#8592;
+        </a>
+        <div class="logo">
+            <img src="../logo.png" alt="Ovitalab Logo">
+        </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search data portals..." aria-label="Search data portals">
+            <button class="search-button" id="searchButton" aria-label="Search">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <main class="main-content">
+        <!-- Ovita's Data Section -->
+        <h2 class="section-title">Ovita's Data</h2>
+        <div class="no-data">
+            <h3>No Downloadable Data Available</h3>
+            <p>We are currently working on preparing our datasets for public access. Please check back later or explore data from our partner organizations below.</p>
+        </div>
+
+        <!-- No Results Message (hidden by default) -->
+        <div class="no-results" id="noResults">
+            <h3>No matching results found</h3>
+            <p>Try different keywords or reset your search to see all data portals.</p>
+            <button class="reset-search" id="resetSearch">Reset Search</button>
+        </div>
+
+        <!-- Data from Other Sources Section -->
+        <h2 class="section-title"> government space agencies</h2>
+        <p class="section-description">Explore these open data portals from space agencies around the world to access a wealth of space and Earth observation data.</p>
+        
+        <div class="data-portals" id="dataPortals">
+            <!-- NASA -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/nasa.jpg" alt="NASA Open Data Portal">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">NASA Open Data Portal</h3>
+                    <a href="https://data.nasa.gov" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- ESA -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/esa.jpg" alt="ESA Open data ">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">ESA Open data Portal</h3>
+                    <a href="https://open.esa.int/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- JAXA -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/jaxa.jpg" alt="JAXA Earth Observation Center">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">JAXA G-portal (japan)</h3>
+                    <a href="https://gportal.jaxa.jp/gpr/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- ISRO -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/isro.jpg" alt="ISRO Bhuvan Geoportal">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">ISRO science data</h3>
+                    <a href="https://www.issdc.gov.in/isda.html" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- German Aerospace Center -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/dlr.jpg" alt="German Aerospace Center">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">German Aerospace Center</h3>
+                    <a href="https://www.dlr.de/en/eoc/research-transfer/topics/satellite-data/data-access" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- Roscosmos -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/rocomus.jpg" alt="Roscosmos (Russia)">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">Roscosmos (Russia)</h3>
+                    <a href="https://stacindex.org/catalogs/ers-open-data#/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- SANSA -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/sanasa.jpg" alt="SANSA Open Data (South Africa)">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">SANSA Open Data (South Africa)</h3>
+                    <a href="https://www.sansa.org.za/research-data/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- CSA -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/csa.jpg" alt="CSA Open Data (Canada)">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">CSA Open Data (Canada)</h3>
+                    <a href="https://donnees-data.asc-csa.gc.ca/dataset" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+            
+            <!-- UKSA (United Kingdom) -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/uk.jpg" alt="UK Space blog">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">UK Space Agency blog</h3>
+                    <a href="https://space.blog.gov.uk/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- CNES (France) -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/cnes.jpg" alt="CNES Open Data">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">CNES Open Data</h3>
+                    <a href="https://www.connectbycnes.fr/en/access-satellite-data" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- CONAE (Argentina) -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/conae.jpg" alt="CONAE Argentina">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">CONAE (Argentina)</h3>
+                    <a href="https://www.argentina.gob.ar/ciencia/conae" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- ASI (Italy) -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/asi.jpg" alt="ASI Italy">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">ASI (Italy)</h3>
+                    <a href="https://www.asi.it/en/earth-observation/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- KARI (South Korea) -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/kari.jpg" alt="KARI">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">KARI (South Korea)</h3>
+                    <a href="https://www.kari.re.kr/eng.do" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- NSAU (Ukraine) -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/nsau.jpg" alt="NSAU">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">NSAU (Ukraine)</h3>
+                    <a href="https://www.nkau.gov.ua/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+
+
+            <!-- UAE Space Agency -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/uae.jpg" alt="UAE Space Agency">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">UAE Space Agency</h3>
+                    <a href="https://space.gov.ae/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- AEB / INPE (Brazil) -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/inpe.jpg" alt="INPE Brazil">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">INPE (Brazil)</h3>
+                    <a href="https://www.gov.br/inpe/pt-br" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+
+
+            <!-- USGS / Landsat -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/usgs.jpg" alt="USGS Landsat">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">USGS (Landsat)</h3>
+                    <a href="https://earthexplorer.usgs.gov/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- POLSA (Poland) -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/polsa.jpg" alt="POLSA">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">POLSA (Poland)</h3>
+                    <a href="https://polsa.gov.pl/en/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Heading for Private Space Agencies -->
+        <h2 class="section-title">Private Space Agencies </h2>
+        
+        <div class="data-portals" id="privatePortals">
+               
+            <!-- Satellogic -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/sac.jpg" alt="Satellogic">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">Satellogic</h3>
+                    <a href="https://huggingface.co/datasets/satellogic/EarthView" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+
+
+            <!-- Libre Space Foundation -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/lsf.jpg" alt="Libre Space Foundation">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">Libre Space Foundation</h3>
+                    <a href="https://libre.space/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- Space Data Marketplace -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/sdm.jpg" alt="Space Data Marketplace">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">Space Data Marketplace</h3>
+                    <a href="https://www.space-data-marketplace.eu/en/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- UrtheCast -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/uc.jpg" alt="UrtheCast">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">UrtheCast</h3>
+                    <a href="https://www.urthecast.com/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- Pixxel -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/pix.jpg" alt="Pixxel">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">Pixxel</h3>
+                    <a href="https://pixxel.space/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- GHGSat -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/gsat.jpg" alt="GHGSat">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">GHGSat</h3>
+                    <a href="https://www.ghgsat.com/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+
+            <!-- Capella Space -->
+            <div class="portal-card">
+                <div class="portal-logo">
+                    <img src="img/cs.jpg" alt="Capella Space">
+                </div>
+                <div class="portal-content">
+                    <h3 class="portal-title">Capella Space</h3>
+                    <a href="https://www.capellaspace.com/" class="visit-button">Visit Site</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="../cs.html">PRIVACY POLICY</a> | <a href="tu.html">tools</a>
+            </div>
+            <p>Ovitalab © 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+            const searchResults = document.getElementById('searchResults');
+            const resetSearchButton = document.getElementById('resetSearch');
+            const noResultsMessage = document.getElementById('noResults');
+            const dataPortals = document.getElementById('dataPortals');
+            const privatePortals = document.getElementById('privatePortals');
+            
+            // All portal cards
+            const allPortalCards = [...document.querySelectorAll('.portal-card')];
+            
+            // Function to perform search
+            function performSearch() {
+                const searchTerm = searchInput.value.trim().toLowerCase();
+                
+                if (searchTerm === '') {
+                    // Reset everything if search is empty
+                    resetSearch();
+                    return;
+                }
+                
+                let matchCount = 0;
+                let visibleSections = new Set();
+                
+                // Search through all portal cards
+                allPortalCards.forEach(card => {
+                    const title = card.querySelector('.portal-title').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm)) {
+                        card.style.display = 'block';
+                        matchCount++;
+                        
+                        // Track which section this card belongs to
+                        if (dataPortals.contains(card)) {
+                            visibleSections.add('data');
+                        } else if (privatePortals.contains(card)) {
+                            visibleSections.add('private');
+                        }
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Update search results text
+                searchResults.textContent = `Found ${matchCount} matching results for "${searchTerm}"`;
+                
+                // Show/hide no results message
+                if (matchCount === 0) {
+                    noResultsMessage.style.display = 'block';
+                } else {
+                    noResultsMessage.style.display = 'none';
+                }
+                
+                // Show/hide section titles based on whether they have visible cards
+                const sectionTitles = document.querySelectorAll('.section-title');
+                sectionTitles.forEach(title => {
+                    if (title.textContent === "Data from Other Sources") {
+                        title.style.display = visibleSections.has('data') ? 'block' : 'none';
+                    } else if (title.textContent === "Private Space Agencies & Nonprofit Initiatives") {
+                        title.style.display = visibleSections.has('private') ? 'block' : 'none';
+                    }
+                });
+                
+                // Show/hide section descriptions
+                const sectionDescriptions = document.querySelectorAll('.section-description');
+                sectionDescriptions.forEach(desc => {
+                    desc.style.display = visibleSections.has('data') ? 'block' : 'none';
+                });
+            }
+            
+            // Function to reset search
+            function resetSearch() {
+                searchInput.value = '';
+                searchResults.textContent = '';
+                noResultsMessage.style.display = 'none';
+                
+                // Show all cards
+                allPortalCards.forEach(card => {
+                    card.style.display = 'block';
+                });
+                
+                // Show all section titles and descriptions
+                const sectionTitles = document.querySelectorAll('.section-title');
+                sectionTitles.forEach(title => {
+                    title.style.display = 'block';
+                });
+                
+                const sectionDescriptions = document.querySelectorAll('.section-description');
+                sectionDescriptions.forEach(desc => {
+                    desc.style.display = 'block';
+                });
+            }
+            
+            // Event listeners
+            searchButton.addEventListener('click', performSearch);
+            
+            searchInput.addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            resetSearchButton.addEventListener('click', resetSearch);
+            
+            // Add animation to search bar on focus
+            searchInput.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            searchInput.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+    </script>
+</body>
+</html>
