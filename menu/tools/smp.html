@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rocket Tools – Fuel & Maneuver</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: monospace;
+      margin: 0;
+      padding: 0;
+    }
+    header, footer {
+      background: #111;
+      padding: 1rem;
+      text-align: center;
+      font-weight: bold;
+      position: relative;
+    }
+    header img {
+      height: 40px;
+      display: block;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+    .back-arrow {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      text-decoration: none;
+      font-size: 1.5rem;
+    }
+    main {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .config {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 370px;
+      width: 100%;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+    input, select, button {
+      margin-top: 0.3rem;
+      padding: 0.5rem;
+      background: #222;
+      color: #fff;
+      border: 1px solid #555;
+    }
+    button {
+      font-size: 1rem;
+      margin: 0.5rem 0.3rem;
+    }
+    button:hover {
+      background: #333;
+    }
+    .results {
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 600px;
+    }
+    textarea {
+      width: 360px;
+      height: 120px;
+      background: #111;
+      color: #fff;
+      padding: 0.5rem;
+      border: 1px solid #444;
+    }
+    .tutorial-box {
+      background: #111;
+      border: 1px solid #333;
+      padding: 1rem;
+      margin-top: 2rem;
+      max-width: 350px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .help-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .help-link a {
+      color: white;
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .config {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back-arrow" href="../tu.html">&#8592;</a>
+    <a href="../../index.html"><img src="logo.png" alt="Logo" /></a>
+  </header>
+
+  <h2 style="margin-top: 2rem;">Spacecraft Maneuver Planner</h2>
+  <div class="config">
+    <label>Initial Orbit Radius (km)
+      <input type="number" id="r1" value="7000">
+    </label>
+    <label>Target Orbit Radius (km)
+      <input type="number" id="r2" value="14000">
+    </label>
+    <label>Spacecraft Mass (kg)
+      <input type="number" id="mass" value="5000">
+    </label>
+    <label>Unit:
+      <select id="unitSelector">
+        <option value="km">Kilometers</option>
+        <option value="miles">Miles</option>
+      </select>
+    </label>
+  </div>
+  <div>
+    <button onclick="calculateManeuver()">Simulate Maneuver</button>
+    <button onclick="resetFields()">Reset Fields</button>
+  </div>
+  <div class="results">
+    <textarea id="maneuverOutput" readonly></textarea>
+  </div>
+
+  <div>
+    <button onclick="copyResults()">Copy Results</button>
+    <button onclick="downloadResults()">Download Results</button>
+  </div>
+
+  <div class="tutorial-box">
+    <h3>How to Use</h3>
+    <p>1. Enter Initial Orbit Radius: In the input field for "Initial Orbit Radius," enter the radius of the spacecraft's initial orbit (in kilometers or miles depending on the unit selected).</p>
+    <p>2. Enter Target Orbit Radius: In the "Target Orbit Radius" input, provide the radius of the desired target orbit (in kilometers or miles).</p>
+    <p>3. Enter Spacecraft Mass: Specify the mass of your spacecraft in the "Spacecraft Mass" field. This should be in kilograms.</p>
+    <p>4. Select Unit: Choose whether you want to use kilometers or miles by selecting the appropriate option from the dropdown menu next to the "Unit" label.</p>
+    <p>5. Click "Simulate Maneuver": Once all inputs are entered, click on the "Simulate Maneuver" button to calculate and display the orbital transfer data.</p>
+    <p>6. View the Results: After clicking "Simulate Maneuver," the output will appear in the "Results" box. You will see detailed values like initial and target velocities, Delta-V values, transfer time, escape velocity, and more.</p>
+    <p>7. Reset Fields: If you want to start over with new values, click the "Reset Fields" button to clear all inputs and results.</p>
+    <p>8. Experiment with Different Inputs: Feel free to experiment with different values for orbit radius, spacecraft mass, and other parameters to see how the results change.</p>
+  </div>
+
+  <div class="help-link">
+    <p><a href="../Contact.html">Need more help?</a></p>
+  </div>
+
+  <footer>
+    &copy; Ovita Space Agency
+  </footer>
+
+  <script>
+    function calculateManeuver() {
+      const r1 = parseFloat(document.getElementById("r1").value) * 1000;
+      const r2 = parseFloat(document.getElementById("r2").value) * 1000;
+      const mu = 3.986e14; // Earth's gravitational parameter (m^3/s^2)
+
+      const v1 = Math.sqrt(mu / r1);
+      const v2 = Math.sqrt(mu / r2);
+      const aTransfer = (r1 + r2) / 2;
+      const vTransfer1 = Math.sqrt(mu * (2 / r1 - 1 / aTransfer));
+      const vTransfer2 = Math.sqrt(mu * (2 / r2 - 1 / aTransfer));
+      const deltaV1 = vTransfer1 - v1;
+      const deltaV2 = v2 - vTransfer2;
+      const totalDeltaV = deltaV1 + deltaV2;
+      const period = 2 * Math.PI * Math.sqrt(Math.pow(aTransfer, 3) / mu);
+      const time = period / 2;
+
+      const result = `Initial Velocity: ${v1.toFixed(2)} m/s
+Target Velocity: ${v2.toFixed(2)} m/s
+Delta-V for Transfer Insertion: ${deltaV1.toFixed(2)} m/s
+Delta-V for Circularization: ${deltaV2.toFixed(2)} m/s
+Total Delta-V: ${totalDeltaV.toFixed(2)} m/s
+Transfer Time: ${(time / 60).toFixed(2)} min`;
+
+      document.getElementById("maneuverOutput").value = result;
+    }
+
+    // Function to copy the result to clipboard
+    function copyResults() {
+      const resultText = document.getElementById('maneuverOutput').value;
+      navigator.clipboard.writeText(resultText);
+      alert("Results copied to clipboard!");
+    }
+
+    // Function to download the result as a text file
+    function downloadResults() {
+      const resultText = document.getElementById('maneuverOutput').value;
+      const blob = new Blob([resultText], { type: "text/plain" });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'maneuver_results.txt';
+      link.click();
+    }
+
+    // Function to reset fields
+    function resetFields() {
+      document.getElementById("r1").value = 7000;
+      document.getElementById("r2").value = 14000;
+      document.getElementById("mass").value = 5000;
+      document.getElementById("maneuverOutput").value = "";
+    }
+  </script>
+</body>
+</html>
