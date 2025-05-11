@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth - Ovitalab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            color: #ffffff;
+            background-color: #000000;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header styles */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            transition: 0.3s;
+            margin-right: 20px;
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+        }
+
+        .logo {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            position: absolute;
+            left: 0;
+            z-index: -1;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        /* Hero section */
+        .hero {
+            height: 100vh;
+            background-image: url('/placeholder.svg?height=1080&width=1920');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 900px;
+            padding: 0 20px;
+        }
+
+        .hero-title {
+            font-size: 4.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+            background: linear-gradient(90deg, #ffffff, #a0a0a0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.7;
+            animation: fadeInOut 2s infinite;
+        }
+
+        .scroll-indicator span {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .arrow {
+            width: 20px;
+            height: 20px;
+            border-right: 2px solid white;
+            border-bottom: 2px solid white;
+            transform: rotate(45deg);
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Main content styles */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        .section {
+            margin-bottom: 100px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #ffffff, #a0a0a0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .section-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #e0e0e0;
+        }
+
+        .section-content p {
+            margin-bottom: 20px;
+        }
+
+        .section-content h3 {
+            font-size: 1.5rem;
+            margin: 30px 0 15px;
+            color: #ffffff;
+        }
+
+        .section-content ul, .section-content ol {
+            margin-bottom: 20px;
+            margin-left: 20px;
+        }
+
+        .section-content li {
+            margin-bottom: 10px;
+        }
+
+        /* Two-column layout */
+        .two-column {
+            display: flex;
+            gap: 40px;
+            margin: 40px 0;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        .image-container {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .image-container:hover img {
+            transform: scale(1.05);
+        }
+
+        .caption {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Stats section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background-color: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ffffff, #a0a0a0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+        }
+
+        /* Quote section */
+        .quote-section {
+            background-color: rgba(30, 30, 30, 0.5);
+            border-radius: 8px;
+            padding: 60px 40px;
+            margin: 60px 0;
+            position: relative;
+        }
+
+        .quote-section::before {
+            content: """;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 6rem;
+            font-family: Georgia, serif;
+            color: rgba(255, 255, 255, 0.1);
+            line-height: 1;
+        }
+
+        .quote-text {
+            font-size: 1.5rem;
+            font-style: italic;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quote-author {
+            font-size: 1.1rem;
+            text-align: right;
+            color: #a0a0a0;
+        }
+
+        /* Call to action */
+        .cta-section {
+            background-color: rgba(30, 30, 30, 0.5);
+            border-radius: 8px;
+            padding: 60px 40px;
+            text-align: center;
+            margin: 60px 0;
+        }
+
+        .cta-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .cta-text {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #000000;
+            padding: 15px 30px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .cta-button:hover {
+            background-color: #ffffff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Footer styles */
+        footer {
+            padding: 30px 50px;
+            background-color: black;
+            border-top: 1px solid #333;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 15px;
+        }
+
+        .footer-links {
+            margin-bottom: 15px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #cccccc;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 992px) {
+            .hero-title {
+                font-size: 3.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.3rem;
+            }
+
+            .two-column {
+                flex-direction: column;
+            }
+
+            .quote-text {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.8rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .quote-section {
+                padding: 40px 20px;
+            }
+
+            .cta-section {
+                padding: 40px 20px;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Animation for section elements */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="back-button">
+            &#8592;
+        </a>
+        <div class="logo">
+            <img src="logo.png" alt="Ovitalab Logo">
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">Earth: Our Home in the Cosmos</h1>
+                <p class="hero-subtitle">The pale blue dot that harbors all known life in the universe</p>
+            </div>
+            <div class="scroll-indicator">
+                <span>Scroll to explore</span>
+                <div class="arrow"></div>
+            </div>
+        </section>
+
+        <div class="main-content">
+            <!-- Introduction Section -->
+            <section class="section">
+                <h2 class="section-title">Our Cosmic Oasis</h2>
+                <div class="section-content">
+                    <p>In the vast expanse of the cosmos, Earth stands as a remarkable anomaly—a vibrant, living planet teeming with biodiversity and complex ecosystems. From the depths of its oceans to the peaks of its mountains, from its polar ice caps to its equatorial rainforests, Earth presents a tapestry of environments that have nurtured the evolution of millions of species, including our own.</p>
+                    
+                    <p>As astronaut Edgar Mitchell eloquently stated after viewing Earth from space during the Apollo 14 mission: "You develop an instant global consciousness, a people orientation, an intense dissatisfaction with the state of the world, and a compulsion to do something about it."</p>
+                    
+                    <p>At Ovitalab, we believe that understanding our home planet is fundamental to our mission of space exploration. By studying Earth, we gain insights into planetary science that inform our investigations of other worlds, while also developing technologies to monitor and protect the delicate balance of our own biosphere.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="column">
+                        <div class="image-container">
+                            <img src="img/earth.jpg" alt="Earth from space showing the Americas">
+                        </div>
+                        <p class="caption">Earth as seen from space, showing the India and vast indian Ocean</p>
+                    </div>
+                    <div class="column">
+                        <h3>A Unique World</h3>
+                        <p>Earth is the only known celestial body that harbors life. Its position in the "Goldilocks zone" of our solar system—not too hot, not too cold—allows for liquid water to exist on its surface, a crucial ingredient for life as we know it.</p>
+                        <p>Our planet's protective magnetic field shields us from harmful solar radiation, while its atmosphere regulates temperature and provides the air we breathe. The dynamic interplay between Earth's systems—atmosphere, hydrosphere, geosphere, and biosphere—creates the conditions that make our existence possible.</p>
+                        <p>As we venture into space, we carry with us the knowledge that Earth remains our only home, a precious island of life in the cosmic ocean that deserves our stewardship and protection.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Earth by the Numbers Section -->
+            <section class="section">
+                <h2 class="section-title">Earth by the Numbers</h2>
+                <div class="section-content">
+                    <p>Our planet is a complex system with remarkable characteristics that make it uniquely suited for life. Here are some key statistics that help us understand Earth's place in the solar system and universe:</p>
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number">4.54 Billion</div>
+                        <div class="stat-label">Years Old</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12,742 km</div>
+                        <div class="stat-label">Diameter</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">149.6 Million km</div>
+                        <div class="stat-label">Average Distance from Sun</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">24 Hours</div>
+                        <div class="stat-label">Rotation Period</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">365.25 Days</div>
+                        <div class="stat-label">Orbital Period</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">71%</div>
+                        <div class="stat-label">Surface Covered by Water</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">8.7 Million</div>
+                        <div class="stat-label">Estimated Species</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">1</div>
+                        <div class="stat-label">Natural Satellite (Moon)</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Earth's Systems Section -->
+            <section class="section">
+                <h2 class="section-title">Earth's Interconnected Systems</h2>
+                <div class="section-content">
+                    <p>Earth functions as an integrated system of components that interact in complex ways. Understanding these systems and their interactions is crucial for addressing global challenges like climate change and resource management.</p>
+
+                    <h3>The Atmosphere</h3>
+                    <p>Earth's atmosphere is a thin layer of gases that surrounds our planet, held in place by gravity. It consists primarily of nitrogen (78%) and oxygen (21%), with trace amounts of other gases including the greenhouse gases that regulate our climate. The atmosphere protects life by filtering out harmful solar radiation, moderating temperatures, and providing the air we breathe.</p>
+
+                    <h3>The Hydrosphere</h3>
+                    <p>Water covers approximately 71% of Earth's surface, existing in oceans, lakes, rivers, glaciers, and underground aquifers. The hydrosphere plays a vital role in regulating climate, supporting ecosystems, and facilitating the water cycle—the continuous movement of water between the atmosphere, land, and oceans through processes of evaporation, precipitation, and runoff.</p>
+
+                    <div class="two-column">
+                        <div class="column">
+                            <h3>The Geosphere</h3>
+                            <p>The solid Earth beneath our feet—comprising the crust, mantle, and core—makes up the geosphere. This dynamic system is constantly changing through processes like plate tectonics, volcanic activity, and erosion. The movement of tectonic plates shapes our continents and ocean basins, while the cycling of elements through the Earth's interior and surface influences climate and habitability over geological timescales.</p>
+                            
+                            <h3>The Biosphere</h3>
+                            <p>The sum of all living organisms on Earth constitutes the biosphere. From microscopic bacteria to massive whales, from deep-sea thermal vent communities to high-altitude mountain ecosystems, life has adapted to virtually every environment on our planet. The biosphere interacts with all other Earth systems, influencing atmospheric composition, soil formation, and even the weathering of rocks.</p>
+                        </div>
+
+                    </div>
+
+                    <h3>The Cryosphere</h3>
+                    <p>Earth's frozen regions—including ice sheets, glaciers, sea ice, and permafrost—make up the cryosphere. These frozen water reservoirs play a crucial role in reflecting solar radiation back to space (the albedo effect) and storing freshwater. The cryosphere is particularly sensitive to climate change, with melting ice contributing to sea level rise and changing global weather patterns.</p>
+                </div>
+            </section>
+
+            <!-- Earth from Space Section -->
+            <section class="section">
+                <h2 class="section-title">Earth Observation: Our Planet from Above</h2>
+                <div class="section-content">
+                    <p>Viewing Earth from space has revolutionized our understanding of our home planet. Satellite imagery and remote sensing technologies allow us to monitor environmental changes, track weather patterns, and observe human impacts on a global scale.</p>
+
+                    <div class="two-column">
+                        <div class="column">
+
+                        <div class="column">
+                            <h3>The Power of Perspective</h3>
+                            <p>Earth observation satellites provide a unique vantage point for studying our planet. From hundreds of kilometers above, we can track deforestation, monitor urban growth, measure sea level rise, and observe the effects of climate change on a global scale.</p>
+                            <p>These observations inform scientific research, guide policy decisions, and help us develop strategies for sustainable resource management and disaster response. The data collected by Earth-observing satellites represents one of the most valuable tools we have for understanding and protecting our planet.</p>
+                        </div>
+                    </div>
+
+                    <h3>Applications of Earth Observation</h3>
+                    <ul>
+                        <li><strong>Climate Monitoring:</strong> Tracking changes in temperature, sea ice, and greenhouse gas concentrations to understand climate change.</li>
+                        <li><strong>Disaster Management:</strong> Providing critical information before, during, and after natural disasters like hurricanes, floods, and wildfires.</li>
+                        <li><strong>Agriculture:</strong> Monitoring crop health, predicting yields, and optimizing irrigation to enhance food security.</li>
+                        <li><strong>Urban Planning:</strong> Mapping urban growth, infrastructure development, and land use changes to support sustainable development.</li>
+                        <li><strong>Biodiversity Conservation:</strong> Tracking habitat changes, deforestation, and ecosystem health to protect endangered species.</li>
+                        <li><strong>Water Resource Management:</strong> Monitoring water quality, tracking droughts, and managing watersheds for sustainable water use.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Climate Change Section -->
+            <section class="section">
+                <h2 class="section-title">Our Changing Planet</h2>
+                <div class="section-content">
+                    <p>Earth is currently experiencing rapid environmental changes driven primarily by human activities. The burning of fossil fuels, deforestation, industrial processes, and agricultural practices have increased atmospheric greenhouse gas concentrations to levels not seen in millions of years, leading to global warming and climate change.</p>
+
+                    <h3>The Evidence of Change</h3>
+                    <p>Multiple lines of evidence confirm that our planet is warming and its systems are changing:</p>
+                    <ul>
+                        <li>Global average temperatures have increased by approximately 1.1°C since pre-industrial times.</li>
+                        <li>Arctic sea ice is declining at a rate of about 13% per decade.</li>
+                        <li>Sea levels are rising at an accelerating rate due to thermal expansion and melting ice sheets.</li>
+                        <li>Extreme weather events, including heatwaves, droughts, and intense precipitation, are becoming more frequent and severe.</li>
+                        <li>Ocean acidification is increasing as the seas absorb more carbon dioxide from the atmosphere.</li>
+                    </ul>
+
+                    <div class="quote-section">
+                        <p class="quote-text">"We are the first generation to feel the effect of climate change and the last generation who can do something about it."</p>
+                        <p class="quote-author">— Barack Obama</p>
+                    </div>
+
+                    <h3>Space Technology in Climate Science</h3>
+                    <p>Space agencies like Ovitalab play a crucial role in climate science by deploying satellites that monitor key climate indicators. These Earth observation missions provide the continuous, global data needed to understand climate change, validate climate models, and inform mitigation and adaptation strategies.</p>
+
+                    <p>Our commitment to Earth science reflects our understanding that space exploration and Earth stewardship are complementary endeavors. The technologies we develop for studying other planets often yield new tools for monitoring and protecting our own.</p>
+                </div>
+            </section>
+
+            <!-- Biodiversity Section -->
+            <section class="section">
+                <h2 class="section-title">Earth's Remarkable Biodiversity</h2>
+                <div class="section-content">
+                    <p>One of Earth's most extraordinary features is its biodiversity—the variety of life forms that have evolved over billions of years. From microscopic bacteria to towering sequoias, from deep-sea creatures to high-flying birds, our planet hosts an estimated 8.7 million species, though only about 1.2 million have been formally identified and described.</p>
+
+                    <div class="two-column">
+                        <div class="column">
+                            <h3>The Web of Life</h3>
+                            <p>Earth's ecosystems function through complex interactions between species and their environments. Each organism plays a role in these systems, contributing to processes like nutrient cycling, pollination, seed dispersal, and pest control. This biodiversity provides resilience to ecosystems, allowing them to adapt to changing conditions.</p>
+                            <p>Human well-being is intimately connected to biodiversity. We depend on other species for food, medicine, building materials, and countless ecosystem services. The genetic diversity within species also represents a reservoir of potential solutions to future challenges, from disease resistance to climate adaptation.</p>
+                        </div>
+                        <div class="column">
+                            <div class="image-container">
+                                <img src="menu/dot.jpg" alt="Collage of diverse ecosystems and species">
+                            </div>
+                            <p class="caption">All our hopes, fears, and dreams—cradled on a pale blue dot.</p>
+                        </div>
+                    </div>
+
+                    <h3>Biodiversity Under Threat</h3>
+                    <p>Today, Earth's biodiversity faces unprecedented challenges. Habitat destruction, pollution, overexploitation, invasive species, and climate change are driving what scientists call the "sixth mass extinction"—a rapid loss of species estimated to be 100 to 1,000 times faster than the natural background rate.</p>
+                    <p>Protecting biodiversity requires coordinated action at local, national, and global levels. Space-based Earth observation provides valuable tools for monitoring ecosystems, tracking deforestation, and identifying priority areas for conservation.</p>
+                </div>
+            </section>
+
+            <!-- Ovitalab's Earth Science Section -->
+            <section class="section">
+                <h2 class="section-title">Ovitalab's Earth Science Initiatives</h2>
+                <div class="section-content">
+                    <p>At Ovitalab, we recognize that understanding Earth is fundamental to our mission of space exploration. Our Earth science initiatives combine cutting-edge technology with collaborative research to monitor our planet's vital signs and develop solutions to environmental challenges.</p>
+
+                    <h3>Current Projects</h3>
+                    <ul>
+                        <li><strong>Global Climate Monitoring:</strong> Deploying advanced sensors to track temperature changes, greenhouse gas concentrations, and other climate indicators with unprecedented precision.</li>
+                        <li><strong>Biodiversity Mapping:</strong> Using hyperspectral imaging to identify and monitor ecosystems, helping conservation efforts target the most vulnerable areas.</li>
+                        <li><strong>Water Resource Management:</strong> Tracking freshwater availability, quality, and usage patterns to support sustainable water management practices.</li>
+                        <li><strong>Disaster Response Systems:</strong> Developing rapid-response satellite capabilities to provide critical data during natural disasters and humanitarian crises.</li>
+                        <li><strong>Urban Sustainability:</strong> Monitoring urban growth, heat islands, and air quality to support the development of more sustainable cities.</li>
+                    </ul>
+
+                    <h3>Collaborative Approach</h3>
+                    <p>Our Earth science initiatives bring together experts from diverse fields—remote sensing specialists, climate scientists, ecologists, data analysts, and policy experts—to translate satellite observations into actionable knowledge.</p>
+                    <p>We partner with research institutions, government agencies, and non-governmental organizations around the world to maximize the impact of our work. By sharing data openly and developing user-friendly tools, we ensure that Earth observation benefits as many people as possible.</p>
+                </div>
+            </section>
+
+            <!-- Call to Action Section -->
+            <section class="cta-section">
+                <h2 class="cta-title">Join Us in Protecting Our Home Planet</h2>
+                <p class="cta-text">Earth is our only home—a precious oasis of life in the vastness of space. At Ovitalab, we believe that exploring space and protecting Earth are complementary missions. The perspective we gain from looking outward helps us better understand and appreciate our own planet.</p>
+                <p class="cta-text">We invite you to join us in this dual mission: to explore the cosmos while safeguarding the pale blue dot that sustains us all.</p>
+                <a href="../cs.html" class="cta-button">Explore Our Earth Programs</a>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="../cs.html">PRIVACY POLICY</a> | <a href="tu.html">TOOLS</a>
+            </div>
+            <p>Ovitalab © 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Intersection Observer for fade-in animations
+            const sections = document.querySelectorAll(".section-title, .section-content, .two-column, .stats-container, .quote-section, .cta-section");
+
+            const fadeInObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("visible");
+                            fadeInObserver.unobserve(entry.target);
+                        }
+                    });
+                },
+                {
+                    threshold: 0.1,
+                }
+            );
+
+            sections.forEach((section) => {
+                section.classList.add("fade-in");
+                fadeInObserver.observe(section);
+            });
+
+            // Parallax effect for hero section
+            const hero = document.querySelector(".hero");
+            
+            window.addEventListener("scroll", () => {
+                const scrollPosition = window.pageYOffset;
+                if (hero) {
+                    hero.style.backgroundPosition = `center ${scrollPosition * 0.4}px`;
+                }
+            });
+
+            // Smooth scrolling for internal links
+            document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+                anchor.addEventListener("click", function (e) {
+                    e.preventDefault();
+
+                    const targetId = this.getAttribute("href");
+                    if (targetId !== "#") {
+                        document.querySelector(targetId).scrollIntoView({
+                            behavior: "smooth",
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
