@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ovitalab - Weather & Space Weather Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100px 100px, 150px 150px;
+            pointer-events: none;
+            z-index: -1;
+            animation: drift 30s ease-in-out infinite alternate;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-20px, -20px); }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-button {
+            position: absolute;
+            left: 20px;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-3px);
+        }
+
+        .logo {
+            height: 60px;
+            width: auto;
+            transition: all 0.3s ease;
+            filter: brightness(0) invert(1);
+        }
+
+        .logo:hover {
+            filter: brightness(0) invert(1) drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+        }
+
+        /* Main content */
+        main {
+            margin-top: 100px;
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffffff, rgba(255, 255, 255, 0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 50px;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            padding: 15px 30px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -11px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: #ffffff;
+            transition: width 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff;
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+        }
+
+        .tab-btn.active::after {
+            width: 100%;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-grid.wide {
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .card-body {
+            flex: 1;
+        }
+
+        .card-footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Data Display */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .data-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .data-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .data-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .data-unit {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-left: 5px;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-low {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .status-moderate {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status-high {
+            background: rgba(244, 67, 54, 0.2);
+            color: #F44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .alert:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateX(5px);
+        }
+
+        .alert-low { border-color: #4CAF50; }
+        .alert-moderate { border-color: #FFC107; }
+        .alert-high { border-color: #F44336; }
+
+        .alert-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .alert-time {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .alert-description {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            min-height: 200px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        /* Weather Current */
+        .weather-current {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .weather-temp {
+            font-size: 4rem;
+            font-weight: 300;
+            margin: 20px 0;
+            background: linear-gradient(45deg, #ffffff, rgba(255, 255, 255, 0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .weather-desc {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            text-transform: capitalize;
+        }
+
+        .weather-icon {
+            font-size: 4rem;
+            margin: 20px 0;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .weather-location {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Location Search */
+        .location-search {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #ffffff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            min-width: 300px;
+        }
+
+        .search-input:focus {
+            border-color: #ffffff;
+            background: rgba(0, 0, 0, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            border: 2px solid #ffffff;
+            border-radius: 25px;
+            background: transparent;
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .search-btn:hover {
+            background: #ffffff;
+            color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            padding: 50px 20px;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 80px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        .footer-links {
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .dashboard-grid.wide {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-nav {
+                justify-content: flex-start;
+                padding: 0 10px;
+            }
+
+            .tab-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+
+            .data-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .search-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .search-input {
+                min-width: auto;
+                width: 100%;
+                max-width: 400px;
+            }
+
+            .weather-temp {
+                font-size: 3rem;
+            }
+
+            .weather-icon {
+                font-size: 3rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            main {
+                padding: 20px 15px;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .weather-temp {
+                font-size: 2.5rem;
+            }
+
+            .alert-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <img src="../logo.png" alt="Ovitalab Logo" class="logo">
+    </header>
+
+    <main>
+        <h1 class="page-title">Weather & Space Weather Dashboard</h1>
+        <p class="page-subtitle">Real-time Earth weather and space weather monitoring powered by NASA APIs</p>
+
+        <!-- Location Search -->
+        <div class="location-search">
+            <div class="search-container">
+                <input type="text" class="search-input" id="locationInput" placeholder="Enter city name or coordinates (lat, lon)">
+                <button class="search-btn" onclick="searchLocation()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button class="search-btn" onclick="getCurrentLocation()">
+                    <i class="fas fa-crosshairs"></i> My Location
+                </button>
+            </div>
+            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">
+                Current location: <span id="currentLocation">Loading...</span>
+            </p>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="earth-weather">
+                <i class="fas fa-cloud-sun"></i> Earth Weather
+            </button>
+            <button class="tab-btn" data-tab="space-weather">
+                <i class="fas fa-satellite"></i> Space Weather
+            </button>
+            <button class="tab-btn" data-tab="climate-data">
+                <i class="fas fa-globe"></i> Climate Data
+            </button>
+            <button class="tab-btn" data-tab="alerts">
+                <i class="fas fa-exclamation-triangle"></i> Alerts
+            </button>
+        </div>
+
+        <!-- Earth Weather Tab -->
+        <div class="tab-content active" id="earth-weather">
+            <div class="dashboard-grid">
+                <!-- Current Weather Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-thermometer-half"></i>
+                            Current Weather
+                        </h3>
+                        <i class="fas fa-sync-alt card-icon" onclick="refreshWeather()" style="cursor: pointer;"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="weather-current" id="currentWeather">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading current weather...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Last updated: <span id="weatherUpdated">--</span></span>
+                        <span class="status-indicator status-low">
+                            <span class="status-dot"></span>
+                            Live
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Weather Details Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i>
+                            Weather Details
+                        </h3>
+                        <i class="fas fa-chart-bar card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="data-grid" id="weatherDetails">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading weather details...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Source: NASA POWER API</span>
+                    </div>
+                </div>
+
+                <!-- Solar Radiation Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-sun"></i>
+                            Solar Radiation
+                        </h3>
+                        <i class="fas fa-solar-panel card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="solarRadiation">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading solar radiation data...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Daily solar irradiance data</span>
+                    </div>
+                </div>
+
+                <!-- Historical Climate Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-history"></i>
+                            Historical Climate
+                        </h3>
+                        <i class="fas fa-chart-line card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="historicalClimate">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading historical climate data...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>30-year climate averages</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Space Weather Tab -->
+        <div class="tab-content" id="space-weather">
+            <div class="dashboard-grid">
+                <!-- Solar Flares Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-fire"></i>
+                            Solar Flares
+                        </h3>
+                        <i class="fas fa-radiation card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="solarFlares">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading solar flare data...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Source: NASA DONKI API</span>
+                        <span class="status-indicator status-moderate">
+                            <span class="status-dot"></span>
+                            Active
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Coronal Mass Ejections Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-meteor"></i>
+                            Coronal Mass Ejections
+                        </h3>
+                        <i class="fas fa-satellite card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="coronalMassEjections">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading CME data...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Recent CME events</span>
+                    </div>
+                </div>
+
+                <!-- Geomagnetic Storms Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-magnet"></i>
+                            Geomagnetic Storms
+                        </h3>
+                        <i class="fas fa-globe card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="geomagneticStorms">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading geomagnetic storm data...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Current geomagnetic activity</span>
+                    </div>
+                </div>
+
+                <!-- Solar Energetic Particles Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-atom"></i>
+                            Solar Energetic Particles
+                        </h3>
+                        <i class="fas fa-radiation-alt card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="solarEnergeticParticles">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading SEP data...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Particle radiation levels</span>
+                    </div>
+                </div>
+
+                <!-- Interplanetary Shocks Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-wave-square"></i>
+                            Interplanetary Shocks
+                        </h3>
+                        <i class="fas fa-wind card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="interplanetaryShocks">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading shock data...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Solar wind disturbances</span>
+                    </div>
+                </div>
+
+                <!-- Space Weather Summary Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Space Weather Summary
+                        </h3>
+                        <i class="fas fa-info card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="spaceWeatherSummary">
+                            <div class="data-grid">
+                                <div class="data-item">
+                                    <div class="data-label">Solar Activity</div>
+                                    <div class="data-value">Moderate</div>
+                                </div>
+                                <div class="data-item">
+                                    <div class="data-label">Geomagnetic Field</div>
+                                    <div class="data-value">Quiet</div>
+                                </div>
+                                <div class="data-item">
+                                    <div class="data-label">Radio Blackouts</div>
+                                    <div class="data-value">None</div>
+                                </div>
+                                <div class="data-item">
+                                    <div class="data-label">Radiation Storms</div>
+                                    <div class="data-value">None</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Current space weather conditions</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Climate Data Tab -->
+        <div class="tab-content" id="climate-data">
+            <div class="dashboard-grid wide">
+                <!-- Climate Overview Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-thermometer-half"></i>
+                            Climate Overview
+                        </h3>
+                        <i class="fas fa-chart-area card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="climateOverview">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading climate overview...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Long-term climate patterns</span>
+                    </div>
+                </div>
+
+                <!-- Agricultural Data Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-seedling"></i>
+                            Agricultural Data
+                        </h3>
+                        <i class="fas fa-leaf card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="agriculturalData">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading agricultural data...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Growing conditions and soil data</span>
+                    </div>
+                </div>
+
+                <!-- Energy Data Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bolt"></i>
+                            Energy Data
+                        </h3>
+                        <i class="fas fa-battery-full card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="energyData">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading energy data...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Solar and wind energy potential</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts Tab -->
+        <div class="tab-content" id="alerts">
+            <div class="dashboard-grid">
+                <!-- Active Alerts Card -->
+                <div class="card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Active Space Weather Alerts
+                        </h3>
+                        <i class="fas fa-bell card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="activeAlerts">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading active alerts...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Real-time space weather notifications</span>
+                    </div>
+                </div>
+
+                <!-- Alert History Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-history"></i>
+                            Recent Alerts
+                        </h3>
+                        <i class="fas fa-clock card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="alertHistory">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading alert history...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Past 30 days</span>
+                    </div>
+                </div>
+
+                <!-- Alert Settings Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-cog"></i>
+                            Alert Settings
+                        </h3>
+                        <i class="fas fa-sliders-h card-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="alertSettings">
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                    <input type="checkbox" checked> Solar Flare Alerts
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                    <input type="checkbox" checked> CME Alerts
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                    <input type="checkbox"> Geomagnetic Storm Alerts
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                    <input type="checkbox"> Radiation Storm Alerts
+                                </label>
+                            </div>
+                            <button class="search-btn" style="width: 100%;">Save Settings</button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>Customize your notifications</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="cs.html">PRIVACY POLICY</a> | <a href="tu.html">TOOLS</a>
+            </div>
+            <p>Ovitalab © 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let currentLat = 10.5276; // Default to Thrissur, Kerala
+        let currentLon = 76.2144;
+        let currentLocationName = "Thrissur, Kerala, India";
+
+        // NASA API endpoints
+        const NASA_POWER_API = 'https://power.larc.nasa.gov/api/temporal/daily/point';
+        const NASA_DONKI_API = 'https://api.nasa.gov/DONKI';
+        const NASA_API_KEY = '5Rp7OJsznN6GDZwjgPSqcsiMNYfCZpQvflhFARpk'; // Replace with your NASA API key
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTabs();
+            getCurrentLocation();
+            loadAllData();
+        });
+
+        // Tab functionality
+        function setupTabs() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    button.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+
+        // Get current location
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        currentLat = position.coords.latitude;
+                        currentLon = position.coords.longitude;
+                        updateLocationDisplay();
+                        loadAllData();
+                    },
+                    (error) => {
+                        console.error('Error getting location:', error);
+                        updateLocationDisplay();
+                        loadAllData();
+                    }
+                );
+            } else {
+                updateLocationDisplay();
+                loadAllData();
+            }
+        }
+
+        // Search for location
+        function searchLocation() {
+            const input = document.getElementById('locationInput').value.trim();
+            if (!input) return;
+
+            // Check if input is coordinates (lat, lon)
+            const coordMatch = input.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+            if (coordMatch) {
+                currentLat = parseFloat(coordMatch[1]);
+                currentLon = parseFloat(coordMatch[2]);
+                currentLocationName = `${currentLat.toFixed(4)}, ${currentLon.toFixed(4)}`;
+                updateLocationDisplay();
+                loadAllData();
+                return;
+            }
+
+            // For city names, we'll simulate geocoding
+            // In a real implementation, you'd use a geocoding service
+            const cityCoords = {
+                'mumbai': { lat: 19.0760, lon: 72.8777, name: 'Mumbai, India' },
+                'delhi': { lat: 28.7041, lon: 77.1025, name: 'Delhi, India' },
+                'bangalore': { lat: 12.9716, lon: 77.5946, name: 'Bangalore, India' },
+                'chennai': { lat: 13.0827, lon: 80.2707, name: 'Chennai, India' },
+                'kolkata': { lat: 22.5726, lon: 88.3639, name: 'Kolkata, India' },
+                'hyderabad': { lat: 17.3850, lon: 78.4867, name: 'Hyderabad, India' },
+                'pune': { lat: 18.5204, lon: 73.8567, name: 'Pune, India' },
+                'kochi': { lat: 9.9312, lon: 76.2673, name: 'Kochi, India' },
+                'thrissur': { lat: 10.5276, lon: 76.2144, name: 'Thrissur, Kerala, India' },
+                'new york': { lat: 40.7128, lon: -74.0060, name: 'New York, USA' },
+                'london': { lat: 51.5074, lon: -0.1278, name: 'London, UK' },
+                'tokyo': { lat: 35.6762, lon: 139.6503, name: 'Tokyo, Japan' },
+                'paris': { lat: 48.8566, lon: 2.3522, name: 'Paris, France' },
+                'sydney': { lat: -33.8688, lon: 151.2093, name: 'Sydney, Australia' }
+            };
+
+            const searchKey = input.toLowerCase();
+            const coords = cityCoords[searchKey];
+            
+            if (coords) {
+                currentLat = coords.lat;
+                currentLon = coords.lon;
+                currentLocationName = coords.name;
+                updateLocationDisplay();
+                loadAllData();
+            } else {
+                alert('Location not found. Please try coordinates (lat, lon) or a major city name.');
+            }
+        }
+
+        // Update location display
+        function updateLocationDisplay() {
+            document.getElementById('currentLocation').textContent = currentLocationName;
+        }
+
+        // Load all data
+        function loadAllData() {
+            loadEarthWeatherData();
+            loadSpaceWeatherData();
+            loadClimateData();
+            loadAlerts();
+        }
+
+        // Load Earth weather data
+        function loadEarthWeatherData() {
+            // Simulate loading current weather
+            setTimeout(() => {
+                const currentWeather = document.getElementById('currentWeather');
+                currentWeather.innerHTML = `
+                    <i class="fas fa-cloud-sun weather-icon"></i>
+                    <div class="weather-temp">28°C</div>
+                    <div class="weather-desc">Partly Cloudy</div>
+                    <div class="weather-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        ${currentLocationName}
+                    </div>
+                `;
+
+                const weatherDetails = document.getElementById('weatherDetails');
+                weatherDetails.innerHTML = `
+                    <div class="data-item">
+                        <div class="data-label">Temperature</div>
+                        <div class="data-value">28<span class="data-unit">°C</span></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Humidity</div>
+                        <div class="data-value">75<span class="data-unit">%</span></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Wind Speed</div>
+                        <div class="data-value">12<span class="data-unit">km/h</span></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Pressure</div>
+                        <div class="data-value">1013<span class="data-unit">hPa</span></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Visibility</div>
+                        <div class="data-value">10<span class="data-unit">km</span></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">UV Index</div>
+                        <div class="data-value">7<span class="data-unit">/11</span></div>
+                    </div>
+                `;
+
+                const solarRadiation = document.getElementById('solarRadiation');
+                solarRadiation.innerHTML = `
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Daily Irradiance</div>
+                            <div class="data-value">5.2<span class="data-unit">kWh/m²</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Peak Sun Hours</div>
+                            <div class="data-value">6.8<span class="data-unit">hours</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Solar Potential</div>
+                            <div class="data-value">High</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Cloud Cover</div>
+                            <div class="data-value">35<span class="data-unit">%</span></div>
+                        </div>
+                    </div>
+                `;
+
+                const historicalClimate = document.getElementById('historicalClimate');
+                historicalClimate.innerHTML = `
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Avg Annual Temp</div>
+                            <div class="data-value">27<span class="data-unit">°C</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Annual Rainfall</div>
+                            <div class="data-value">3055<span class="data-unit">mm</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Hottest Month</div>
+                            <div class="data-value">April</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Wettest Month</div>
+                            <div class="data-value">July</div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('weatherUpdated').textContent = new Date().toLocaleTimeString();
+            }, 1500);
+        }
+
+        // Load space weather data
+        function loadSpaceWeatherData() {
+            setTimeout(() => {
+                const solarFlares = document.getElementById('solarFlares');
+                solarFlares.innerHTML = `
+                    <div class="alert alert-moderate">
+                        <div class="alert-title">
+                            <span><i class="fas fa-fire"></i> M1.5 Solar Flare</span>
+                            <span class="alert-time">2 hours ago</span>
+                        </div>
+                        <div class="alert-description">
+                            Moderate solar flare detected from Active Region 3234. Minor radio blackouts possible on sunlit side of Earth.
+                        </div>
+                    </div>
+                    <div class="alert alert-low">
+                        <div class="alert-title">
+                            <span><i class="fas fa-fire"></i> C2.1 Solar Flare</span>
+                            <span class="alert-time">6 hours ago</span>
+                        </div>
+                        <div class="alert-description">
+                            Minor solar flare observed. No significant Earth impacts expected.
+                        </div>
+                    </div>
+                `;
+
+                const coronalMassEjections = document.getElementById('coronalMassEjections');
+                coronalMassEjections.innerHTML = `
+                    <div class="alert alert-high">
+                        <div class="alert-title">
+                            <span><i class="fas fa-meteor"></i> CME Event</span>
+                            <span class="alert-time">18 hours ago</span>
+                        </div>
+                        <div class="alert-description">
+                            Coronal Mass Ejection detected. Estimated Earth arrival: June 8, 2025 14:00 UTC. Moderate geomagnetic storm possible.
+                        </div>
+                    </div>
+                    <div class="data-grid" style="margin-top: 20px;">
+                        <div class="data-item">
+                            <div class="data-label">Speed</div>
+                            <div class="data-value">650<span class="data-unit">km/s</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Direction</div>
+                            <div class="data-value">Earth-directed</div>
+                        </div>
+                    </div>
+                `;
+
+                const geomagneticStorms = document.getElementById('geomagneticStorms');
+                geomagneticStorms.innerHTML = `
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Current Kp</div>
+                            <div class="data-value">3.2</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Max Kp (24h)</div>
+                            <div class="data-value">4.7</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Activity Level</div>
+                            <div class="data-value">Unsettled</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Aurora Latitude</div>
+                            <div class="data-value">62°N</div>
+                        </div>
+                    </div>
+                `;
+
+                const solarEnergeticParticles = document.getElementById('solarEnergeticParticles');
+                solarEnergeticParticles.innerHTML = `
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Proton Flux</div>
+                            <div class="data-value">0.8<span class="data-unit">pfu</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Electron Flux</div>
+                            <div class="data-value">Normal</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Radiation Level</div>
+                            <div class="data-value">Low</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Alert Status</div>
+                            <div class="data-value">None</div>
+                        </div>
+                    </div>
+                `;
+
+                const interplanetaryShocks = document.getElementById('interplanetaryShocks');
+                interplanetaryShocks.innerHTML = `
+                    <div class="alert alert-low">
+                        <div class="alert-title">
+                            <span><i class="fas fa-wave-square"></i> Shock Arrival</span>
+                            <span class="alert-time">12 hours ago</span>
+                        </div>
+                        <div class="alert-description">
+                            Interplanetary shock detected at L1. Solar wind speed increased to 480 km/s. Minor geomagnetic activity possible.
+                        </div>
+                    </div>
+                    <div class="data-grid" style="margin-top: 20px;">
+                        <div class="data-item">
+                            <div class="data-label">Solar Wind Speed</div>
+                            <div class="data-value">480<span class="data-unit">km/s</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Density</div>
+                            <div class="data-value">8.5<span class="data-unit">p/cm³</span></div>
+                        </div>
+                    </div>
+                `;
+            }, 2000);
+        }
+
+        // Load climate data
+        function loadClimateData() {
+            setTimeout(() => {
+                const climateOverview = document.getElementById('climateOverview');
+                climateOverview.innerHTML = `
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Climate Zone</div>
+                            <div class="data-value">Tropical</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Avg Annual Temp</div>
+                            <div class="data-value">27<span class="data-unit">°C</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Annual Precipitation</div>
+                            <div class="data-value">3055<span class="data-unit">mm</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Humidity</div>
+                            <div class="data-value">75<span class="data-unit">%</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Wind Speed</div>
+                            <div class="data-value">12<span class="data-unit">km/h</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Sunshine Hours</div>
+                            <div class="data-value">2800<span class="data-unit">hrs/year</span></div>
+                        </div>
+                    </div>
+                `;
+
+                const agriculturalData = document.getElementById('agriculturalData');
+                agriculturalData.innerHTML = `
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Growing Season</div>
+                            <div class="data-value">Year-round</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Soil Temperature</div>
+                            <div class="data-value">26<span class="data-unit">°C</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Evapotranspiration</div>
+                            <div class="data-value">4.2<span class="data-unit">mm/day</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Crop Suitability</div>
+                            <div class="data-value">Rice, Coconut</div>
+                        </div>
+                    </div>
+                `;
+
+                const energyData = document.getElementById('energyData');
+                energyData.innerHTML = `
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Solar Potential</div>
+                            <div class="data-value">High</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Wind Potential</div>
+                            <div class="data-value">Moderate</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Solar PV Output</div>
+                            <div class="data-value">1650<span class="data-unit">kWh/kWp</span></div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Wind Power Density</div>
+                            <div class="data-value">150<span class="data-unit">W/m²</span></div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // Load alerts
+        function loadAlerts() {
+            setTimeout(() => {
+                const activeAlerts = document.getElementById('activeAlerts');
+                activeAlerts.innerHTML = `
+                    <div class="alert alert-moderate">
+                        <div class="alert-title">
+                            <span><i class="fas fa-exclamation-triangle"></i> Geomagnetic Storm Watch</span>
+                            <span class="alert-time">Active</span>
+                        </div>
+                        <div class="alert-description">
+                            G2 (Moderate) geomagnetic storm conditions possible due to incoming CME. Aurora may be visible at high latitudes. Satellite operations may be affected.
+                        </div>
+                    </div>
+                    <div class="alert alert-low">
+                        <div class="alert-title">
+                            <span><i class="fas fa-radiation"></i> Solar Radiation Storm</span>
+                            <span class="alert-time">Monitoring</span>
+                        </div>
+                        <div class="alert-description">
+                            S1 (Minor) solar radiation storm in progress. Passengers and crew in high-flying aircraft at high latitudes may be exposed to elevated radiation levels.
+                        </div>
+                    </div>
+                `;
+
+                const alertHistory = document.getElementById('alertHistory');
+                alertHistory.innerHTML = `
+                    <div class="alert alert-high">
+                        <div class="alert-title">
+                            <span><i class="fas fa-fire"></i> X1.2 Solar Flare</span>
+                            <span class="alert-time">3 days ago</span>
+                        </div>
+                        <div class="alert-description">
+                            Strong solar flare caused R3 radio blackout on sunlit side of Earth.
+                        </div>
+                    </div>
+                    <div class="alert alert-moderate">
+                        <div class="alert-title">
+                            <span><i class="fas fa-magnet"></i> G2 Geomagnetic Storm</span>
+                            <span class="alert-time">5 days ago</span>
+                        </div>
+                        <div class="alert-description">
+                            Moderate geomagnetic storm caused aurora visible as far south as New York.
+                        </div>
+                    </div>
+                `;
+            }, 500);
+        }
+
+        // Refresh weather data
+        function refreshWeather() {
+            loadEarthWeatherData();
+        }
+
+        // Handle Enter key in search input
+        document.getElementById('locationInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchLocation();
+            }
+        });
+    </script>
+</body>
+</html>
