@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ovitalab - Ovita+ Space Monitoring</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Subtle starfield background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.3), transparent),
+                radial-gradient(1px 1px at 40px 70px, rgba(255,255,255,0.2), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.3), transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.2), transparent),
+                radial-gradient(1px 1px at 160px 30px, rgba(255,255,255,0.3), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            pointer-events: none;
+            z-index: -1;
+            animation: sparkle 60s linear infinite;
+        }
+
+        @keyframes sparkle {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-100px); }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-button {
+            position: absolute;
+            left: 20px;
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-3px);
+        }
+
+        .logo {
+            height: 60px;
+            width: auto;
+            transition: all 0.3s ease;
+            filter: brightness(0) invert(1);
+        }
+
+        .logo:hover {
+            filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+            transform: scale(1.05);
+        }
+
+        /* Main content */
+        main {
+            margin-top: 100px;
+            padding: 40px 20px;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 50px;
+            font-weight: 300;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .dashboard-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(25, 25, 25, 0.9);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-icon {
+            font-size: 1.6rem;
+            color: #aaaaaa;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .card-icon {
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Video Container */
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ISS Tracker */
+        .iss-map {
+            height: 400px;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .iss-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .iss-data {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .iss-data-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .iss-data-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* Asteroid Data */
+        .asteroid-list {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.3);
+        }
+
+        .asteroid-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .asteroid-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .asteroid-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .asteroid-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 3px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .asteroid-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .asteroid-item.hazardous {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.05);
+        }
+
+        .asteroid-name {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .asteroid-details {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .hazard-icon {
+            color: #ff6b6b;
+            animation: pulse-warning 2s infinite;
+        }
+
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            min-height: 300px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        /* Error State */
+        .error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            min-height: 300px;
+            color: #ff6b6b;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .error-text {
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .retry-btn {
+            padding: 10px 20px;
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .retry-btn:hover {
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-live {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .status-tracking {
+            background: rgba(255, 255, 255, 0.05);
+            color: #4CAF50;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-error {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Footer */
+        footer {
+            padding: 50px 20px;
+            background: rgba(10, 10, 10, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 80px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        .footer-links {
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+        }
+
+        /* Control Button */
+        .control-btn {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Last Updated */
+        .last-updated {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 25px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .video-container {
+                height: 300px;
+            }
+
+            .iss-map {
+                height: 300px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .iss-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            main {
+                padding: 20px 15px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .card-title {
+                font-size: 1.2rem;
+            }
+
+            .video-container {
+                height: 250px;
+            }
+
+            .iss-map {
+                height: 250px;
+            }
+
+            .iss-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <img src="../logo.png" alt="Ovitalab Logo" class="logo">
+    </header>
+
+    <main>
+        <h1 class="page-title">Ovita+</h1>
+        <p class="page-subtitle">Advanced Space Exploration & Real-Time Cosmic Monitoring</p>
+
+        <!-- NASA Live ISS Feed -->
+        <div class="dashboard-grid full">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-video card-icon"></i>
+                        NASA Live - ISS Real-Time View
+                    </h3>
+                    <div class="status-indicator status-live">
+                        <span class="status-dot"></span>
+                        Live
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="video-container">
+                        <iframe 
+                            src="https://www.youtube-nocookie.com/embed/H999s0P1Er0?si=GuFLMFp0TxWk7vbS&amp;controls=0"
+                            title="NASA Live - Earth from Space (ISS)"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span>Live feed from the International Space Station</span>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard-grid">
+            <!-- ISS Tracker -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-satellite card-icon"></i>
+                        ISS Tracker
+                    </h3>
+                    <div class="status-indicator" id="issStatus">
+                        <span class="status-dot"></span>
+                        Connecting...
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="issMap" class="iss-map"></div>
+                    <div class="iss-info" id="issInfo">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p class="loading-text">Connecting to ISS tracking API...</p>
+                        </div>
+                    </div>
+                    <div class="last-updated" id="issLastUpdated"></div>
+                </div>
+                <div class="card-footer">
+                    <span>Real-time ISS location and orbital data</span>
+                    <button class="control-btn" onclick="centerOnISS()" id="centerISSBtn" disabled>
+                        <i class="fas fa-crosshairs"></i> Center
+                    </button>
+                </div>
+            </div>
+
+            <!-- Near-Earth Asteroids -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-meteor card-icon"></i>
+                        Near-Earth Asteroids
+                    </h3>
+                    <div class="status-indicator" id="asteroidStatus">
+                        <span class="status-dot"></span>
+                        Loading...
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="asteroid-list" id="asteroidList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p class="loading-text">Loading NASA NeoWs data...</p>
+                        </div>
+                    </div>
+                    <div class="last-updated" id="asteroidLastUpdated"></div>
+                </div>
+                <div class="card-footer">
+                    <span>Source: NASA NeoWs API</span>
+                    <button class="control-btn" onclick="refreshAsteroids()" id="refreshAsteroidsBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="cs.html">PRIVACY POLICY</a> | <a href="tu.html">TOOLS</a>
+            </div>
+            <p>Ovitalab © 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let issMap;
+        let issMarker, issPosition = { lat: 0, lng: 0 };
+        let issTrail = [];
+        let issTrailPolyline;
+
+        // NASA API endpoints
+        const ISS_API = 'http://api.open-notify.org/iss-now.json';
+        const ISS_PASS_API = 'http://api.open-notify.org/iss-pass.json';
+        const ASTEROID_API = 'https://api.nasa.gov/neo/rest/v1/feed';
+        const NASA_API_KEY = '5Rp7OJsznN6GDZwjgPSqcsiMNYfCZpQvflhFARpk'; // You can replace with your NASA API key
+
+        // CORS proxy for development (you may need to replace this with your own proxy)
+        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeISS();
+            loadAsteroidData();
+            
+            // Update ISS position every 10 seconds
+            setInterval(updateISSPosition, 10000);
+            
+            // Update asteroid data every hour
+            setInterval(loadAsteroidData, 3600000);
+        });
+
+        // ISS Tracker Functions
+        function initializeISS() {
+            issMap = L.map('issMap').setView([0, 0], 2);
+            
+            // Dark theme map
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(issMap);
+
+            // ISS icon
+            const issIcon = L.divIcon({
+                className: 'iss-icon',
+                html: '<i class="fas fa-satellite" style="color: #ffffff; font-size: 20px; text-shadow: 0 0 10px rgba(255,255,255,0.5);"></i>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+
+            issMarker = L.marker([0, 0], { icon: issIcon }).addTo(issMap);
+            
+            // Initialize trail polyline
+            issTrailPolyline = L.polyline([], {
+                color: 'rgba(255, 255, 255, 0.5)',
+                weight: 2,
+                opacity: 0.7
+            }).addTo(issMap);
+
+            updateISSPosition();
+        }
+
+        async function updateISSPosition() {
+            try {
+                updateISSStatus('tracking', 'Tracking');
+                
+                // Fetch ISS position
+                const response = await fetch(CORS_PROXY + encodeURIComponent(ISS_API));
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.iss_position) {
+                    const lat = parseFloat(data.iss_position.latitude);
+                    const lng = parseFloat(data.iss_position.longitude);
+                    const timestamp = data.timestamp;
+                    
+                    issPosition = { lat, lng };
+                    issMarker.setLatLng([lat, lng]);
+                    
+                    // Add to trail (keep last 50 positions)
+                    issTrail.push([lat, lng]);
+                    if (issTrail.length > 50) {
+                        issTrail.shift();
+                    }
+                    issTrailPolyline.setLatLngs(issTrail);
+                    
+                    // Calculate orbital data
+                    const speed = 27600; // Average ISS speed in km/h
+                    const altitude = 408; // Average ISS altitude in km
+                    
+                    // Update ISS info display
+                    document.getElementById('issInfo').innerHTML = `
+                        <div class="iss-data">
+                            <div class="iss-data-label">Latitude</div>
+                            <div class="iss-data-value">${lat.toFixed(4)}°</div>
+                        </div>
+                        <div class="iss-data">
+                            <div class="iss-data-label">Longitude</div>
+                            <div class="iss-data-value">${lng.toFixed(4)}°</div>
+                        </div>
+                        <div class="iss-data">
+                            <div class="iss-data-label">Speed</div>
+                            <div class="iss-data-value">${speed.toLocaleString()} km/h</div>
+                        </div>
+                        <div class="iss-data">
+                            <div class="iss-data-label">Altitude</div>
+                            <div class="iss-data-value">${altitude} km</div>
+                        </div>
+                        <div class="iss-data">
+                            <div class="iss-data-label">Orbital Period</div>
+                            <div class="iss-data-value">92.9 min</div>
+                        </div>
+                        <div class="iss-data">
+                            <div class="iss-data-label">Crew</div>
+                            <div class="iss-data-value">7 people</div>
+                        </div>
+                    `;
+                    
+                    // Update last updated time
+                    const lastUpdated = new Date(timestamp * 1000).toLocaleString();
+                    document.getElementById('issLastUpdated').textContent = `Last updated: ${lastUpdated}`;
+                    
+                    // Enable center button
+                    document.getElementById('centerISSBtn').disabled = false;
+                    
+                    updateISSStatus('tracking', 'Live Tracking');
+                } else {
+                    throw new Error('Invalid ISS data received');
+                }
+                
+            } catch (error) {
+                console.error('Error fetching ISS position:', error);
+                updateISSStatus('error', 'Connection Error');
+                
+                document.getElementById('issInfo').innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-exclamation-triangle error-icon"></i>
+                        <p class="error-text">Unable to connect to ISS tracking API</p>
+                        <button class="retry-btn" onclick="updateISSPosition()">
+                            <i class="fas fa-redo"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateISSStatus(type, text) {
+            const statusElement = document.getElementById('issStatus');
+            statusElement.className = `status-indicator status-${type}`;
+            statusElement.innerHTML = `<span class="status-dot"></span>${text}`;
+        }
+
+        function centerOnISS() {
+            if (issPosition.lat !== 0 || issPosition.lng !== 0) {
+                issMap.setView([issPosition.lat, issPosition.lng], 4);
+            }
+        }
+
+        // Asteroid Data Functions
+        async function loadAsteroidData() {
+            try {
+                updateAsteroidStatus('tracking', 'Loading');
+                
+                // Get today's date and 7 days from now for the feed
+                const today = new Date();
+                const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+                
+                const startDate = today.toISOString().split('T')[0];
+                const endDate = nextWeek.toISOString().split('T')[0];
+                
+                const url = `${ASTEROID_API}?start_date=${startDate}&end_date=${endDate}&api_key=${NASA_API_KEY}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Process asteroid data
+                const asteroids = [];
+                const nearEarthObjects = data.near_earth_objects;
+                
+                // Collect all asteroids from all dates
+                Object.keys(nearEarthObjects).forEach(date => {
+                    nearEarthObjects[date].forEach(asteroid => {
+                        const closeApproach = asteroid.close_approach_data[0];
+                        if (closeApproach) {
+                            asteroids.push({
+                                id: asteroid.id,
+                                name: asteroid.name,
+                                diameter: asteroid.estimated_diameter.kilometers,
+                                distance: closeApproach.miss_distance.kilometers,
+                                velocity: closeApproach.relative_velocity.kilometers_per_hour,
+                                date: closeApproach.close_approach_date,
+                                hazardous: asteroid.is_potentially_hazardous_asteroid,
+                                magnitude: asteroid.absolute_magnitude_h
+                            });
+                        }
+                    });
+                });
+                
+                // Sort by distance (closest first)
+                asteroids.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+                
+                // Take top 10 closest asteroids
+                const topAsteroids = asteroids.slice(0, 10);
+                
+                displayAsteroids(topAsteroids);
+                updateAsteroidStatus('tracking', 'Monitoring');
+                
+                // Update last updated time
+                document.getElementById('asteroidLastUpdated').textContent = 
+                    `Last updated: ${new Date().toLocaleString()}`;
+                
+            } catch (error) {
+                console.error('Error fetching asteroid data:', error);
+                updateAsteroidStatus('error', 'API Error');
+                
+                document.getElementById('asteroidList').innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-exclamation-triangle error-icon"></i>
+                        <p class="error-text">Unable to load asteroid data from NASA API</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px;">
+                            ${error.message.includes('429') ? 'API rate limit exceeded. Please try again later.' : 
+                              error.message.includes('403') ? 'API key required. Using DEMO_KEY with limited access.' :
+                              'Check your internet connection and try again.'}
+                        </p>
+                        <button class="retry-btn" onclick="loadAsteroidData()">
+                            <i class="fas fa-redo"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayAsteroids(asteroids) {
+            const asteroidList = document.getElementById('asteroidList');
+            
+            if (asteroids.length === 0) {
+                asteroidList.innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-info-circle error-icon" style="color: #ffffff;"></i>
+                        <p class="error-text" style="color: #ffffff;">No near-Earth asteroids found for the next 7 days</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            asteroidList.innerHTML = asteroids.map(asteroid => {
+                const diameterMin = asteroid.diameter.estimated_diameter_min.toFixed(3);
+                const diameterMax = asteroid.diameter.estimated_diameter_max.toFixed(3);
+                const distance = (parseFloat(asteroid.distance) / 1000).toFixed(0); // Convert to thousands of km
+                const velocity = parseFloat(asteroid.velocity).toFixed(0);
+                const approachDate = new Date(asteroid.date).toLocaleDateString();
+                
+                return `
+                    <div class="asteroid-item ${asteroid.hazardous ? 'hazardous' : ''}" 
+                         onclick="showAsteroidDetails('${asteroid.id}', '${asteroid.name}')">
+                        <div class="asteroid-name">
+                            ${asteroid.name.replace(/[()]/g, '')}
+                            ${asteroid.hazardous ? '<i class="fas fa-exclamation-triangle hazard-icon"></i>' : ''}
+                        </div>
+                        <div class="asteroid-details">
+                            <div><strong>Diameter:</strong> ${diameterMin} - ${diameterMax} km</div>
+                            <div><strong>Distance:</strong> ${distance}k km</div>
+                            <div><strong>Velocity:</strong> ${velocity} km/h</div>
+                            <div><strong>Approach:</strong> ${approachDate}</div>
+                            <div><strong>Magnitude:</strong> ${asteroid.magnitude}</div>
+                            <div><strong>Status:</strong> ${asteroid.hazardous ? 'Potentially Hazardous' : 'Safe'}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateAsteroidStatus(type, text) {
+            const statusElement = document.getElementById('asteroidStatus');
+            statusElement.className = `status-indicator status-${type}`;
+            statusElement.innerHTML = `<span class="status-dot"></span>${text}`;
+        }
+
+        function showAsteroidDetails(id, name) {
+            alert(`Detailed information for ${name}\n\nAsteroid ID: ${id}\n\nFor more detailed information, visit:\nhttps://cneos.jpl.nasa.gov/sentry/\n\nThis would typically show:\n- Detailed orbital trajectory\n- Composition analysis\n- Discovery information\n- Historical approach data\n- Risk assessment details`);
+        }
+
+        function refreshAsteroids() {
+            document.getElementById('refreshAsteroidsBtn').disabled = true;
+            document.getElementById('asteroidList').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p class="loading-text">Refreshing NASA asteroid data...</p>
+                </div>
+            `;
+            
+            loadAsteroidData().finally(() => {
+                setTimeout(() => {
+                    document.getElementById('refreshAsteroidsBtn').disabled = false;
+                }, 2000);
+            });
+        }
+
+        // Utility functions
+        function toggleFullscreen() {
+            const videoContainer = document.querySelector('.video-container');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                videoContainer.requestFullscreen();
+            }
+        }
+
+        // Handle errors gracefully
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+        });
+
+        // Add connection status monitoring
+        window.addEventListener('online', function() {
+            console.log('Connection restored');
+            updateISSPosition();
+            loadAsteroidData();
+        });
+
+        window.addEventListener('offline', function() {
+            console.log('Connection lost');
+            updateISSStatus('error', 'Offline');
+            updateAsteroidStatus('error', 'Offline');
+        });
+    </script>
+</body>
+</html>
