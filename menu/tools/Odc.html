@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Orbital Decay Calculator</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: monospace;
+      margin: 0;
+      padding: 0;
+    }
+    header, footer {
+      background: #111;
+      padding: 1rem;
+      text-align: center;
+      font-weight: bold;
+      position: relative;
+    }
+    header img {
+      height: 40px;
+      display: block;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+    .back-arrow {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      text-decoration: none;
+      font-size: 1.5rem;
+    }
+    main {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .config {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 600px;
+      width: 100%;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+    input, select, button {
+      margin-top: 0.3rem;
+      padding: 0.5rem;
+      background: #222;
+      color: #fff;
+      border: 1px solid #555;
+    }
+    button {
+      font-size: 1rem;
+      margin: 0.5rem 0.3rem;
+    }
+    button:hover {
+      background: #333;
+    }
+    .results {
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 600px;
+    }
+    textarea {
+      width: 340px;
+      height: 120px;
+      background: #111;
+      color: #fff;
+      padding: 0.5rem;
+      border: 1px solid #444;
+    }
+    .tutorial-box {
+      background: #111;
+      border: 1px solid #333;
+      padding: 1rem;
+      margin-top: 2rem;
+      max-width: 600px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .help-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .help-link a {
+      color: white;
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .config {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back-arrow" href="../tu.html">&#8592;</a>
+    <a href="../../index.html"><img src="logo.png" alt="Logo" /></a>
+  </header>
+
+  <h2 style="margin-top: 2rem;">Orbital Decay Calculator</h2>
+  <div class="config">
+    <label>Initial Altitude (km)
+      <input type="number" id="altitude" value="400">
+    </label>
+    <label>Satellite Mass (kg)
+      <input type="number" id="mass" value="500">
+    </label>
+    <label>Satellite Area (m²)
+      <input type="number" id="area" value="2.0">
+    </label>
+    <label>Drag Coefficient (C<sub>d</sub>)
+      <input type="number" id="cd" value="2.2">
+    </label>
+    <label>Time Period (days)
+      <input type="number" id="days" value="30">
+    </label>
+  </div>
+  <div>
+    <button onclick="calculateDecay()">Calculate Decay</button>
+    <button onclick="resetDecayFields()">Reset Fields</button>
+  </div>
+  <div class="results">
+    <textarea id="decayOutput" readonly></textarea>
+  </div>
+  <div>
+    <button onclick="copyDecayResults()">Copy Results</button>
+    <button onclick="downloadDecayResults()">Download Results</button>
+  </div>
+
+  <div class="tutorial-box">
+    <h3>How to Use</h3>
+    <p>Enter the satellite's initial altitude, mass, cross-sectional area, drag coefficient, and the number of days to simulate. Click "Calculate Decay" to estimate altitude loss due to atmospheric drag.</p>
+  </div>
+
+  <div class="help-link">
+    <p><a href="../Contact.html">Need more help?</a></p>
+  </div>
+
+  <footer>
+    &copy; Ovita Space Agency
+  </footer>
+
+  <script>
+    function calculateDecay() {
+      const h = parseFloat(document.getElementById('altitude').value);
+      const m = parseFloat(document.getElementById('mass').value);
+      const A = parseFloat(document.getElementById('area').value);
+      const Cd = parseFloat(document.getElementById('cd').value);
+      const days = parseFloat(document.getElementById('days').value);
+
+      const R = 6371; // Earth radius in km
+      const rho0 = 1.225; // Sea level atmospheric density kg/m^3
+      const H = 50; // scale height (km)
+
+      let altitude = h;
+      let decay = 0;
+      for (let i = 0; i < days; i++) {
+        let rho = rho0 * Math.exp(-(altitude) / H);
+        let a = R + altitude;
+        let v = Math.sqrt(398600.4418 * 1e9 / (a * 1000));
+        let Fd = 0.5 * Cd * A * rho * v * v;
+        let da = (Fd * 86400) / (m * v); // decay per day
+        decay += da / 1000; // convert m to km
+        altitude -= da / 1000;
+      }
+
+      document.getElementById('decayOutput').value = `Estimated Altitude Loss after ${days} days: ${decay.toFixed(2)} km\nRemaining Altitude: ${altitude.toFixed(2)} km`;
+    }
+
+    function resetDecayFields() {
+      document.getElementById('altitude').value = 400;
+      document.getElementById('mass').value = 500;
+      document.getElementById('area').value = 2.0;
+      document.getElementById('cd').value = 2.2;
+      document.getElementById('days').value = 30;
+      document.getElementById('decayOutput').value = "";
+    }
+
+    function copyDecayResults() {
+      const resultText = document.getElementById('decayOutput').value;
+      navigator.clipboard.writeText(resultText);
+      alert("Results copied to clipboard!");
+    }
+
+    function downloadDecayResults() {
+      const resultText = document.getElementById('decayOutput').value;
+      const blob = new Blob([resultText], { type: "text/plain" });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'orbital_decay_results.txt';
+      link.click();
+    }
+  </script>
+</body>
+</html>
